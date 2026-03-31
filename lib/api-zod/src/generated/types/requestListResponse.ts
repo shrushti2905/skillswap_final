@@ -5,7 +5,9 @@
  * SkillSwap Platform API
  * OpenAPI spec version: 0.1.0
  */
+import type { SwapRequest } from "./swapRequest";
 
-export interface HealthStatus {
-  status: string;
+export interface RequestListResponse {
+  requests: SwapRequest[];
+  total: number;
 }
