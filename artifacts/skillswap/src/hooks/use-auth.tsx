@@ -39,22 +39,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (data: LoginInput) => {
     const res = await loginMutation.mutateAsync({ data });
     setToken(res.token);
-    refetch();
+    await refetch();
+    setLocation("/discover");
   };
 
   const signup = async (data: SignupInput) => {
     const res = await signupMutation.mutateAsync({ data });
     setToken(res.token);
-    refetch();
+    await refetch();
+    setLocation("/discover");
   };
 
   const logout = () => {
     setToken(null);
-    setLocation("/auth");
+    setLocation("/");
   };
 
+  const isLoading = !!token && isUserLoading;
+
   return (
-    <AuthContext.Provider value={{ user: user || null, token, isLoading: isUserLoading, login, signup, logout }}>
+    <AuthContext.Provider value={{ user: user || null, token, isLoading, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );

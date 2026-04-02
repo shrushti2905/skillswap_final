@@ -17,7 +17,7 @@ import { ArrowRightLeft, Check, X, Trash2, Award, MessageSquare } from "lucide-r
 import { formatDistanceToNow } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { SwapRequest } from "@workspace/api-client-react.schemas";
+import { SwapRequest } from "@workspace/api-client-react";
 
 export default function RequestsPage() {
   const { user } = useAuth();

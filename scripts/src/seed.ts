@@ -6,32 +6,47 @@ import bcrypt from "bcryptjs";
 async function seed() {
   console.log("Seeding database...");
 
-  const adminEmail = "shrushtipatil2905@gmail.com";
-  const existingAdmin = await db.select().from(usersTable).where(eq(usersTable.email, adminEmail)).limit(1);
-
-  let adminId: number;
-
-  if (existingAdmin.length === 0) {
-    const hashedAdminPw = await bcrypt.hash("Admin@123", 12);
-    const [admin] = await db.insert(usersTable).values({
-      name: "Admin User",
-      email: adminEmail,
-      password: hashedAdminPw,
-      role: "admin",
-      skillsOffered: ["Platform Management", "User Support"],
-      skillsWanted: [],
+  const admins = [
+    {
+      name: "Shrushti Patil",
+      email: "shrushtipatil2905@gmail.com",
       bio: "SkillSwap platform administrator",
       location: "Indore",
-      isBlocked: false,
-      availability: ["Weekdays"],
-      isPublic: true,
-      ratingCount: 0,
-    }).returning();
-    adminId = admin.id;
-    console.log("Admin user created:", adminEmail);
-  } else {
-    adminId = existingAdmin[0].id;
-    console.log("Admin user already exists");
+    },
+    {
+      name: "Roshni",
+      email: "roshroshi778@gmail.com",
+      bio: "SkillSwap platform co-administrator",
+      location: "Indore",
+    },
+  ];
+
+  let adminId: number = 0;
+
+  for (const adminData of admins) {
+    const existing = await db.select().from(usersTable).where(eq(usersTable.email, adminData.email)).limit(1);
+    if (existing.length === 0) {
+      const hashedAdminPw = await bcrypt.hash("Admin@123", 12);
+      const [admin] = await db.insert(usersTable).values({
+        name: adminData.name,
+        email: adminData.email,
+        password: hashedAdminPw,
+        role: "admin",
+        skillsOffered: ["Platform Management", "User Support"],
+        skillsWanted: [],
+        bio: adminData.bio,
+        location: adminData.location,
+        isBlocked: false,
+        availability: ["Weekdays"],
+        isPublic: true,
+        ratingCount: 0,
+      }).returning();
+      if (adminData.email === "shrushtipatil2905@gmail.com") adminId = admin.id;
+      console.log("Admin created:", adminData.email);
+    } else {
+      if (adminData.email === "shrushtipatil2905@gmail.com") adminId = existing[0].id;
+      console.log("Admin already exists:", adminData.email);
+    }
   }
 
   const sampleUsers = [

@@ -62,50 +62,49 @@
 
 :root {
   --button-outline: rgba(255,255,255, .10);
-  --badge-outline: rgba(255,255,255, .05);
+  --badge-outline: rgba(255,255,255, .08);
 
   --opaque-button-border-intensity: 9;
 
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
-  /* Deep Navy Dark Theme Default */
-  --background: 225 30% 10%;
+  --background: 224 28% 9%;
   --foreground: 210 40% 96%;
-  
-  --card: 225 25% 14%;
+
+  --card: 224 24% 13%;
   --card-foreground: 210 40% 96%;
-  --card-border: 225 20% 20%;
-  
-  --popover: 225 25% 14%;
+  --card-border: 224 20% 19%;
+
+  --popover: 224 24% 13%;
   --popover-foreground: 210 40% 96%;
-  --popover-border: 225 20% 20%;
-  
+  --popover-border: 224 20% 19%;
+
   --primary: 262 83% 58%;
   --primary-foreground: 210 40% 98%;
-  
-  --secondary: 225 20% 20%;
+
+  --secondary: 224 20% 19%;
   --secondary-foreground: 210 40% 96%;
-  
-  --muted: 225 20% 18%;
-  --muted-foreground: 215 20% 65%;
-  
-  --accent: 262 83% 58%;
+
+  --muted: 224 20% 17%;
+  --muted-foreground: 215 20% 60%;
+
+  --accent: 262 60% 50%;
   --accent-foreground: 210 40% 98%;
-  
-  --destructive: 0 62% 30%;
+
+  --destructive: 0 72% 51%;
   --destructive-foreground: 210 40% 98%;
-  
-  --border: 225 20% 20%;
-  --input: 225 20% 22%;
+
+  --border: 224 20% 19%;
+  --input: 224 20% 21%;
   --ring: 262 83% 58%;
 
-  --sidebar: 225 30% 9%;
+  --sidebar: 224 28% 8%;
   --sidebar-foreground: 210 40% 96%;
-  --sidebar-border: 225 20% 18%;
+  --sidebar-border: 224 20% 17%;
   --sidebar-primary: 262 83% 58%;
   --sidebar-primary-foreground: 210 40% 98%;
-  --sidebar-accent: 225 20% 18%;
+  --sidebar-accent: 224 20% 17%;
   --sidebar-accent-foreground: 210 40% 96%;
   --sidebar-ring: 262 83% 58%;
 
@@ -115,15 +114,44 @@
   --radius: 0.5rem;
 }
 
-.dark {
-  /* It is always dark mode */
-}
+.dark {}
 
 @layer base {
   * {
     @apply border-border;
   }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased text-foreground;
+    background-color: hsl(224 28% 9%);
+    background-image:
+      radial-gradient(ellipse at 15% 40%, hsla(262, 83%, 58%, 0.07) 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 10%, hsla(220, 70%, 60%, 0.05) 0%, transparent 45%),
+      radial-gradient(ellipse at 50% 90%, hsla(262, 60%, 45%, 0.04) 0%, transparent 50%);
+    background-attachment: fixed;
+  }
+}
+
+@layer utilities {
+  .subtle-grid {
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, #a78bfa 0%, #818cf8 50%, #60a5fa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .card-hover {
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(124, 58, 237, 0.12);
   }
 }

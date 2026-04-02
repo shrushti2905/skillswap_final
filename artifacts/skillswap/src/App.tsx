@@ -6,20 +6,27 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { MainLayout } from "@/components/layout/main-layout";
 import NotFound from "@/pages/not-found";
 
-import AuthPage from "@/pages/auth";
+import LandingPage from "@/pages/landing";
 import DiscoverPage from "@/pages/discover";
 import ProfilePage from "@/pages/profile";
 import RequestsPage from "@/pages/requests";
 import NotificationsPage from "@/pages/notifications";
 import AdminPage from "@/pages/admin";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 30_000,
+    },
+  },
+});
 
 function Router() {
   return (
     <Switch>
-      <Route path="/auth" component={AuthPage} />
-      <Route path="/">
+      <Route path="/" component={LandingPage} />
+      <Route path="/discover">
         <MainLayout><DiscoverPage /></MainLayout>
       </Route>
       <Route path="/profile">
