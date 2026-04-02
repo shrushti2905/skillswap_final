@@ -902,7 +902,7 @@ components:
           type: integer
         totalRequests:
           type: integer
-        completedSwaps:
+        completedRequests:
           type: integer
         pendingRequests:
           type: integer
@@ -914,7 +914,8 @@ components:
         - totalUsers
         - activeUsers
         - totalRequests
-        - completedSwaps
+        - completedRequests
+        - rejectedRequests
         - pendingRequests
         - blockedUsers
         - skillsAvailable

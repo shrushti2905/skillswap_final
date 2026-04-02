@@ -16,8 +16,9 @@ router.get("/admin/stats", authenticate, requireAdmin, async (req, res) => {
     const [{ totalUsers }] = await db.select({ totalUsers: sql<number>`count(*)` }).from(usersTable);
     const [{ activeUsers }] = await db.select({ activeUsers: sql<number>`count(*)` }).from(usersTable).where(eq(usersTable.isBlocked, false));
     const [{ totalRequests }] = await db.select({ totalRequests: sql<number>`count(*)` }).from(requestsTable);
-    const [{ completedSwaps }] = await db.select({ completedSwaps: sql<number>`count(*)` }).from(requestsTable).where(eq(requestsTable.status, "completed"));
+    const [{ completedRequests }] = await db.select({ completedRequests: sql<number>`count(*)` }).from(requestsTable).where(eq(requestsTable.status, "completed"));
     const [{ pendingRequests }] = await db.select({ pendingRequests: sql<number>`count(*)` }).from(requestsTable).where(eq(requestsTable.status, "pending"));
+    const [{ rejectedRequests }] = await db.select({ rejectedRequests: sql<number>`count(*)` }).from(requestsTable).where(eq(requestsTable.status, "rejected"));
     const [{ blockedUsers }] = await db.select({ blockedUsers: sql<number>`count(*)` }).from(usersTable).where(eq(usersTable.isBlocked, true));
 
     const allUsers = await db.select({ skillsOffered: usersTable.skillsOffered }).from(usersTable);
@@ -29,8 +30,9 @@ router.get("/admin/stats", authenticate, requireAdmin, async (req, res) => {
       totalUsers: Number(totalUsers),
       activeUsers: Number(activeUsers),
       totalRequests: Number(totalRequests),
-      completedSwaps: Number(completedSwaps),
+      completedRequests: Number(completedRequests),
       pendingRequests: Number(pendingRequests),
+      rejectedRequests: Number(rejectedRequests),
       blockedUsers: Number(blockedUsers),
       skillsAvailable,
     });

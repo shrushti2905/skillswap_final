@@ -132,8 +132,9 @@ export interface AdminStats {
   totalUsers: number;
   activeUsers: number;
   totalRequests: number;
-  completedSwaps: number;
+  completedRequests: number;
   pendingRequests: number;
+  rejectedRequests: number;
   blockedUsers: number;
   skillsAvailable: number;
 }
