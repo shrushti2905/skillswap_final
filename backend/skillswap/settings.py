@@ -1,6 +1,5 @@
-import os
 from pathlib import Path
-from decouple import config
+from decouple import Csv, config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -88,8 +87,14 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = True
+# Keep development friction low while preventing unsafe wildcard + credentials in non-debug environments.
+CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = config(
+    'CORS_ALLOWED_ORIGINS',
+    default='http://localhost:3000,http://127.0.0.1:3000',
+    cast=Csv()
+)
 CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
@@ -114,3 +119,4 @@ REST_FRAMEWORK = {
 }
 
 JWT_SECRET_KEY = config('JWT_SECRET', default='your-jwt-secret-key-change-in-production')
+JWT_EXPIRY_HOURS = config('JWT_EXPIRY_HOURS', default=24, cast=int)

@@ -1,187 +1,107 @@
 import os
 import django
-import bcrypt
+import random
+from faker import Faker
 
-# Setup Django FIRST
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'skillswap.settings')
+# IMPORTANT: correct project name
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "skillswap.settings")
+
 django.setup()
 
-# Now import Django models
+from accounts.models import User
 from django.contrib.auth import get_user_model
-from requests.models import SwapRequest
-from notifications.models import Notification
 
 User = get_user_model()
+fake = Faker("en_IN")
 
-def create_admin_users():
-    """Create admin users"""
-    admin_users = [
-        {
-            'email': 'shrushtipatil2905@gmail.com',
-            'password': 'Admin@123',
-            'name': 'Shrushti Patil',
-            'role': 'admin'
-        },
-        {
-            'email': 'roshroshi778@gmail.com',
-            'password': 'Admin@123',
-            'name': 'Roshni',
-            'role': 'admin'
-        }
-    ]
-    
-    for admin_data in admin_users:
-        if not User.objects.filter(email=admin_data['email']).exists():
-            user = User.objects.create_user(
-                username=admin_data['email'],
-                email=admin_data['email'],
-                password=admin_data['password'],
-                first_name=admin_data['name'],
-                role=admin_data['role'],
-                is_staff=True,
-                is_superuser=True
-            )
-            print(f"Created admin: {admin_data['email']}")
+skills_list = [
+    "Python", "JavaScript", "React", "Node.js", "Django", "Flask", "HTML/CSS", "UI/UX Design",
+    "Graphic Design", "Video Editing", "Digital Marketing", "Content Writing", "Data Analysis",
+    "Machine Learning", "Public Speaking", "Spanish", "French", "Guitar", "Piano", "Photography",
+    "Cooking", "Yoga", "Fitness Training", "SEO", "Social Media", "Project Management"
+]
 
-def create_sample_users():
-    """Create sample users with skills"""
-    sample_users = [
-        {
-            'email': 'john.doe@example.com',
-            'password': 'password123',
-            'name': 'John Doe',
-            'bio': 'Experienced web developer passionate about teaching',
-            'location': 'New York',
-            'skills_offered': ['JavaScript', 'React', 'Node.js'],
-            'skills_wanted': ['Python', 'Machine Learning'],
-            'availability': ['Weekends', 'Evenings']
-        },
-        {
-            'email': 'jane.smith@example.com',
-            'password': 'password123',
-            'name': 'Jane Smith',
-            'bio': 'Graphic designer looking to learn coding',
-            'location': 'San Francisco',
-            'skills_offered': ['UI Design', 'Photoshop', 'Illustrator'],
-            'skills_wanted': ['HTML', 'CSS', 'JavaScript'],
-            'availability': ['Weekdays']
-        },
-        {
-            'email': 'mike.wilson@example.com',
-            'password': 'password123',
-            'name': 'Mike Wilson',
-            'bio': 'Music teacher and producer',
-            'location': 'Los Angeles',
-            'skills_offered': ['Guitar', 'Piano', 'Music Theory'],
-            'skills_wanted': ['Audio Engineering', 'Music Production Software'],
-            'availability': ['Flexible']
-        },
-        {
-            'email': 'sarah.jones@example.com',
-            'password': 'password123',
-            'name': 'Sarah Jones',
-            'bio': 'Language enthusiast and traveler',
-            'location': 'Chicago',
-            'skills_offered': ['Spanish', 'French', 'English Teaching'],
-            'skills_wanted': ['Mandarin', 'Japanese', 'German'],
-            'availability': ['Weekends']
-        },
-        {
-            'email': 'david.brown@example.com',
-            'password': 'password123',
-            'name': 'David Brown',
-            'bio': 'Fitness trainer and nutrition expert',
-            'location': 'Austin',
-            'skills_offered': ['Personal Training', 'Yoga', 'Nutrition Planning'],
-            'skills_wanted': ['Business Management', 'Marketing'],
-            'availability': ['Early Morning', 'Evenings']
-        }
-    ]
-    
-    for user_data in sample_users:
-        if not User.objects.filter(email=user_data['email']).exists():
-            user = User.objects.create_user(
-                username=user_data['email'],
-                email=user_data['email'],
-                password=user_data['password'],
-                first_name=user_data['name'],
-                bio=user_data['bio'],
-                location=user_data['location'],
-                skills_offered=user_data['skills_offered'],
-                skills_wanted=user_data['skills_wanted'],
-                availability=user_data['availability'],
-                role='user'
-            )
-            print(f"Created user: {user_data['email']}")
+availability_options = [
+    "Weekends",
+    "Evenings", 
+    "Weekdays",
+    "Flexible"
+]
 
-def create_sample_requests():
-    """Create sample swap requests"""
-    users = User.objects.filter(role='user')
+locations = ["Mumbai", "Delhi", "Bangalore", "Chennai", "Kolkata", "Hyderabad", "Pune", "Ahmedabad", "Jaipur", "Lucknow"]
+
+# Create admin users first
+admin_users = [
+    {
+        "username": "shrushtipatil",
+        "email": os.getenv("SEED_ADMIN_1_EMAIL", "admin1@example.com"),
+        "password": os.getenv("SEED_ADMIN_PASSWORD", "ChangeMe@123"),
+        "first_name": "Shrushti",
+        "last_name": "Patil",
+        "role": "admin"
+    },
+    {
+        "username": "roshni",
+        "email": os.getenv("SEED_ADMIN_2_EMAIL", "admin2@example.com"),
+        "password": os.getenv("SEED_ADMIN_PASSWORD", "ChangeMe@123"),
+        "first_name": "Roshni",
+        "last_name": "",
+        "role": "admin"
+    }
+]
+
+for admin_data in admin_users:
+    if not User.objects.filter(email=admin_data["email"]).exists():
+        User.objects.create_user(
+            username=admin_data["username"],
+            email=admin_data["email"],
+            password=admin_data["password"],
+            first_name=admin_data["first_name"],
+            last_name=admin_data.get("last_name", ""),
+            role=admin_data["role"],
+            is_staff=True,
+            is_superuser=True,
+            location="Mumbai",
+            bio="Platform Administrator",
+            skills_offered=["Platform Management", "User Support"],
+            skills_wanted=["Community Feedback", "Feature Ideas"],
+            availability=["Weekdays"],
+            rating=5.0,
+            rating_count=10,
+            is_public=True
+        )
+        print(f"✅ Admin user created: {admin_data['email']}")
+
+# Create regular users
+created = 0
+while created < 50:
+    username = fake.user_name()
+    email = fake.email()
     
-    if len(users) >= 2:
-        # Create a few sample requests
-        requests_data = [
-            {
-                'sender': users[0],
-                'receiver': users[1],
-                'skill_offered': 'JavaScript',
-                'skill_requested': 'UI Design',
-                'message': 'I can teach you JavaScript basics in exchange for UI design lessons!'
-            },
-            {
-                'sender': users[2],
-                'receiver': users[0],
-                'skill_offered': 'Guitar',
-                'skill_requested': 'React',
-                'message': 'Would love to learn React while teaching guitar!'
-            },
-            {
-                'sender': users[3],
-                'receiver': users[2],
-                'skill_offered': 'Spanish',
-                'skill_requested': 'Music Theory',
-                'message': 'I can teach Spanish if you can help with music theory'
-            }
-        ]
+    if not User.objects.filter(username=username).exists() and not User.objects.filter(email=email).exists():
+        num_offered = random.randint(1, 4)
+        num_wanted = random.randint(1, 3)
         
-        for req_data in requests_data:
-            if not SwapRequest.objects.filter(
-                sender=req_data['sender'],
-                receiver=req_data['receiver'],
-                skill_offered=req_data['skill_offered']
-            ).exists():
-                request = SwapRequest.objects.create(**req_data)
-                print(f"Created request: {req_data['sender'].email} -> {req_data['receiver'].email}")
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password="Test@123",
+            first_name=fake.first_name(),
+            last_name=fake.last_name(),
+            location=random.choice(locations),
+            bio=fake.text(max_nb_chars=200),
+            skills_offered=random.sample(skills_list, num_offered),
+            skills_wanted=random.sample(skills_list, num_wanted),
+            availability=[random.choice(availability_options)],
+            rating=round(random.uniform(3.5, 5.0), 1),
+            rating_count=random.randint(1, 30),
+            is_public=random.choice([True, True, True, False]),  # 75% public
+            role="user"
+        )
+        
+        created += 1
+        if created % 10 == 0:
+            print(f"✅ Created {created} users...")
 
-def create_notifications():
-    """Create sample notifications"""
-    users = User.objects.all()[:3]
-    
-    for user in users:
-        if not Notification.objects.filter(user=user).exists():
-            Notification.objects.create(
-                user=user,
-                message="Welcome to SkillSwap! Start exploring skills and connect with others."
-            )
-            print(f"Created notification for: {user.email}")
-
-def main():
-    """Main seeding function"""
-    print("Starting database seeding...")
-    
-    # Create admin users
-    create_admin_users()
-    
-    # Create sample users
-    create_sample_users()
-    
-    # Create sample requests
-    create_sample_requests()
-    
-    # Create notifications
-    create_notifications()
-    
-    print("Database seeding completed!")
-
-if __name__ == '__main__':
-    main()
+print(f"\n🎉 Successfully created {created} users + 2 admin users")
+print("Total users in database:", User.objects.count())

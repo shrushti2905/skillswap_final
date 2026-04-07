@@ -33,9 +33,18 @@ class ApiClient {
             const response = await fetch(url, config);
             
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error('API Response Error:', response.status, errorText);
-                throw new Error(errorText || `HTTP ${response.status}: ${response.statusText}`);
+                let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                try {
+                    const errorPayload = await response.json();
+                    if (errorPayload && typeof errorPayload === 'object') {
+                        errorMessage = errorPayload.message || errorPayload.error || JSON.stringify(errorPayload);
+                    }
+                } catch (parseError) {
+                    const errorText = await response.text();
+                    if (errorText) errorMessage = errorText;
+                }
+                console.error('API Response Error:', response.status, errorMessage);
+                throw new Error(errorMessage);
             }
 
             const data = await response.json();

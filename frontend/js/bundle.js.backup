@@ -1732,6 +1732,7 @@ const AdminStats = () => {
 // Removed SkillSwapComponents export
 
 // Main App Component
+const { useRef } = React;
 
 // Swap Request Modal Component
 const SwapRequestModal = ({ isOpen, onClose, userItem, onSubmit }) => {
@@ -2064,197 +2065,55 @@ const DiscoverPage = () => {
         }
     }, [page]);
 
-    // ============================================
-    // MODULAR FILTERING FUNCTIONS
-    // ============================================
-    
-    const matchSearch = (user, searchTerm) => {
-        if (!searchTerm || searchTerm.trim() === '') return true;
-        
-        const search = searchTerm.toLowerCase().trim();
-        const firstName = (user.first_name || '').toLowerCase();
-        const lastName = (user.last_name || '').toLowerCase();
-        const email = (user.email || '').toLowerCase();
-        const bio = (user.bio || '').toLowerCase();
-        const location = (user.location || '').toLowerCase();
-        
-        // Check name, email, bio, location
-        if (firstName.includes(search) || lastName.includes(search) || 
-            email.includes(search) || bio.includes(search) || location.includes(search)) {
-            return true;
-        }
-        
-        // Check skills (partial match)
-        const allSkills = [
-            ...(user.skills_offered || []),
-            ...(user.skills_wanted || [])
-        ].map(s => s.toLowerCase());
-        
-        return allSkills.some(skill => skill.includes(search));
-    };
-    
-    const matchCategory = (user, category) => {
-        if (!category || category === 'All' || category.trim() === '') return true;
-        
-        const categoryLower = category.toLowerCase();
-        const allSkills = [
-            ...(user.skills_offered || []),
-            ...(user.skills_wanted || [])
-        ].map(s => s.toLowerCase());
-        
-        // Partial match - if any skill contains the category
-        return allSkills.some(skill => skill.includes(categoryLower));
-    };
-    
-    const matchSkillFilter = (user, skillFilter) => {
-        if (!skillFilter || skillFilter.trim() === '') return true;
-        
-        const filterLower = skillFilter.toLowerCase();
-        const allSkills = [
-            ...(user.skills_offered || []),
-            ...(user.skills_wanted || [])
-        ].map(s => s.toLowerCase());
-        
-        // Partial match
-        return allSkills.some(skill => skill.includes(filterLower));
-    };
-    
-    const matchLocation = (user, locationFilter) => {
-        if (!locationFilter || locationFilter.trim() === '') return true;
-        
-        const userLocation = (user.location || '').toLowerCase();
-        const filterLower = locationFilter.toLowerCase();
-        
-        // Partial match - supports city or country
-        return userLocation.includes(filterLower);
-    };
-    
-    const matchAvailability = (user, availabilityFilter) => {
-        if (!availabilityFilter || availabilityFilter.trim() === '') return true;
-        
-        const userAvailability = (user.availability || '').toLowerCase();
-        const filterLower = availabilityFilter.toLowerCase();
-        
-        // Partial match to handle variations
-        return userAvailability.includes(filterLower);
-    };
-    
-    const matchRating = (user, minRatingFilter) => {
-        if (!minRatingFilter || minRatingFilter === '') return true;
-        
-        const minRating = parseFloat(minRatingFilter);
-        
-        // If user has no rating, still show them (inclusive approach)
-        if (!user.rating || user.rating === 0) return true;
-        
-        // If user has rating, check if it meets minimum
-        return user.rating >= minRating;
-    };
-    
-    const applyClientSideFilters = (users, filters) => {
-        console.log('🔧 Applying filters:', filters);
-        console.log('📊 Users before filtering:', users.length);
-        
-        const filtered = users.filter(user => {
-            return (
-                matchSearch(user, filters.search) &&
-                matchCategory(user, filters.category) &&
-                matchSkillFilter(user, filters.skillFilter) &&
-                matchLocation(user, filters.location) &&
-                matchAvailability(user, filters.availability) &&
-                matchRating(user, filters.minRating)
-            );
-        });
-        
-        console.log('✅ Users after filtering:', filtered.length);
-        return filtered;
-    };
-    
-    const applySorting = (users, sortOption) => {
-        const sorted = [...users]; // Create a copy to avoid mutating original
-        
-        switch (sortOption) {
-            case 'highest_rated':
-                // Sort by rating (highest first), users without rating go to end
-                sorted.sort((a, b) => {
-                    const ratingA = a.rating || 0;
-                    const ratingB = b.rating || 0;
-                    return ratingB - ratingA;
-                });
-                console.log('⭐ Sorted by highest rated');
-                break;
-                
-            case 'online_now':
-            case 'recently_active':
-                // Sort by availability (Available > Busy > Offline)
-                sorted.sort((a, b) => {
-                    const getAvailabilityScore = (user) => {
-                        const avail = (user.availability || '').toLowerCase();
-                        if (avail.includes('available')) return 3;
-                        if (avail.includes('busy') || avail.includes('weekends') || avail.includes('evenings')) return 2;
-                        return 1;
-                    };
-                    return getAvailabilityScore(b) - getAvailabilityScore(a);
-                });
-                console.log('🟢 Sorted by recently active');
-                break;
-                
-            case 'new_members':
-                // Sort by ID (higher ID = newer user)
-                sorted.sort((a, b) => b.id - a.id);
-                console.log('🆕 Sorted by new members');
-                break;
-                
-            default:
-                // No sorting (relevance)
-                console.log('📍 Using default order (relevance)');
-        }
-        
-        return sorted;
-    };
-
-    // ============================================
-    // LOAD USERS FUNCTION
-    // ============================================
-
     const loadUsers = async (pageNum, reset) => {
         setLoading(true);
         try {
-            // Build API params (server-side filtering)
             const params = { page: pageNum, limit: 12 };
-            // Note: We handle sorting client-side for better control
+            if (debouncedSearch) params.search = debouncedSearch;
+            if (skillFilter) params.skill = skillFilter;
+            if (sort) params.sort = sort;
+            if (availability) params.availability = availability;
+            if (location) params.location = location;
             
-            console.log('🌐 Fetching from API with params:', params);
             const response = await window.apiClient.getUsers(params);
             
             let fetchedUsers = response.users || [];
-            console.log('📥 Received users from API:', fetchedUsers.length);
+            console.log('📊 Loaded users from API:', fetchedUsers.length);
             
             setTotalUsers(response.total || fetchedUsers.length);
-            
-            // Remove current user from results
             if (user) {
                 fetchedUsers = fetchedUsers.filter(u => u.id !== user.id);
-                console.log('👤 After removing current user:', fetchedUsers.length);
             }
             
-            // Apply client-side filters
-            const filters = {
-                search: debouncedSearch,
-                category: skillCategory,
-                skillFilter: skillFilter,
-                location: location,
-                availability: availability,
-                minRating: minRating
-            };
+            // Apply client-side filters only if they have values
+            let filteredUsers = fetchedUsers;
             
-            let filteredUsers = applyClientSideFilters(fetchedUsers, filters);
-            
-            // Apply client-side sorting
-            if (sort) {
-                console.log('🔄 Applying sort:', sort);
-                filteredUsers = applySorting(filteredUsers, sort);
+            // Filter by skill category (case-insensitive partial match)
+            if (skillCategory && skillCategory !== 'All') {
+                const categoryLower = skillCategory.toLowerCase();
+                filteredUsers = filteredUsers.filter(u => {
+                    const offeredSkills = (u.skills_offered || []).map(s => s.toLowerCase());
+                    const wantedSkills = (u.skills_wanted || []).map(s => s.toLowerCase());
+                    const allSkills = [...offeredSkills, ...wantedSkills];
+                    
+                    // Check if any skill contains the category as substring
+                    return allSkills.some(skill => skill.includes(categoryLower));
+                });
+                console.log(`🔍 After category filter (${skillCategory}):`, filteredUsers.length);
             }
+            
+            // Filter by minimum rating (only if user has rating)
+            if (minRating) {
+                const minRatingNum = parseFloat(minRating);
+                filteredUsers = filteredUsers.filter(u => {
+                    // Only filter out if user has a rating AND it's below minimum
+                    // If no rating, still show the user
+                    return !u.rating || u.rating >= minRatingNum;
+                });
+                console.log(`⭐ After rating filter (>=${minRating}):`, filteredUsers.length);
+            }
+            
+            console.log('✅ Final filtered users:', filteredUsers.length);
             
             setUsers(prev => reset ? filteredUsers : [...prev, ...filteredUsers]);
             setHasMore(filteredUsers.length === 12);
@@ -2741,16 +2600,8 @@ const DiscoverPage = () => {
                         )}
 
                         {/* All Users */}
-                        <div className="border-t border-slate-800 pt-6" id="discover-results">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-xl font-bold text-white">All Users</h2>
-                                {!loading && users.length > 0 && (
-                                    <span className="text-sm text-slate-400">
-                                        Showing {users.length} {users.length === 1 ? 'user' : 'users'}
-                                        {activeFiltersCount > 0 && ` (${activeFiltersCount} ${activeFiltersCount === 1 ? 'filter' : 'filters'} active)`}
-                                    </span>
-                                )}
-                            </div>
+                        <div className="border-t border-slate-800 pt-6">
+                            <h2 className="text-xl font-bold mb-4 text-white">All Users</h2>
                             
                             {users.length === 0 && !loading ? (
                                 <div className="text-center py-16 bg-slate-800/40 border border-slate-700/50 rounded-2xl">

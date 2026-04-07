@@ -29,10 +29,15 @@ A peer-to-peer skill exchange platform where users offer skills they have and re
 
 ## Admin Accounts
 
-| Name | Email | Password |
-|------|-------|----------|
-| Shrushti Patil | shrushtipatil2905@gmail.com | Admin@123 |
-| Roshni | roshroshi778@gmail.com | Admin@123 |
+Admin users are created by `seed_database.py`.
+
+Use environment variables before seeding:
+
+- `SEED_ADMIN_1_EMAIL`
+- `SEED_ADMIN_2_EMAIL`
+- `SEED_ADMIN_PASSWORD`
+
+If not set, safe demo defaults are used (`admin1@example.com`, `admin2@example.com`).
 
 ---
 

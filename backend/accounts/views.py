@@ -4,11 +4,20 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import Avg, Count
 from .serializers import SignupSerializer, LoginSerializer, UserSerializer, ProfileUpdateSerializer, SkillSerializer
 from .authentication import generate_token
-import bcrypt
 
 User = get_user_model()
+
+
+def _blocked_response(request):
+    if getattr(request.user, 'is_blocked', False):
+        return Response({
+            'error': 'Forbidden',
+            'message': 'Your account is blocked.'
+        }, status=status.HTTP_403_FORBIDDEN)
+    return None
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -59,20 +68,35 @@ def login(request):
 
 @api_view(['GET'])
 def me(request):
+    blocked = _blocked_response(request)
+    if blocked:
+        return blocked
     serializer = UserSerializer(request.user)
     return Response(serializer.data)
 
 @api_view(['GET'])
 def list_users(request):
+    blocked = _blocked_response(request)
+    if blocked:
+        return blocked
+
     search = request.GET.get('search')
     skill = request.GET.get('skill')
     sort = request.GET.get('sort')
     availability = request.GET.get('availability')
     location = request.GET.get('location')
-    page = int(request.GET.get('page', 1))
-    limit = int(request.GET.get('limit', 20))
+    try:
+        page = max(int(request.GET.get('page', 1)), 1)
+        limit = max(min(int(request.GET.get('limit', 20)), 100), 1)
+    except (TypeError, ValueError):
+        return Response({
+            'error': 'Bad Request',
+            'message': 'Invalid pagination values'
+        }, status=status.HTTP_400_BAD_REQUEST)
     
-    users = User.objects.filter(is_blocked=False)
+    users = User.objects.filter(is_blocked=False, is_public=True)
+    if request.user.is_authenticated and request.user.is_public:
+        users = users | User.objects.filter(id=request.user.id)
     
     if search:
         users = users.filter(
@@ -96,6 +120,8 @@ def list_users(request):
         users = users.order_by('-rating', '-rating_count')
     elif sort == 'online_now':
         pass # mock online, just leave as is
+    elif sort == 'new_members':
+        users = users.order_by('-id')
     
     total = users.count()
     start = (page - 1) * limit
@@ -113,6 +139,10 @@ def list_users(request):
 
 @api_view(['GET', 'PUT'])
 def get_profile(request):
+    blocked = _blocked_response(request)
+    if blocked:
+        return blocked
+
     if request.method == 'GET':
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
@@ -140,6 +170,10 @@ def get_profile(request):
 
 @api_view(['PUT'])
 def update_profile(request):
+    blocked = _blocked_response(request)
+    if blocked:
+        return blocked
+
     serializer = ProfileUpdateSerializer(data=request.data)
     if serializer.is_valid():
         data = serializer.validated_data
@@ -164,6 +198,10 @@ def update_profile(request):
 
 @api_view(['POST', 'DELETE'])
 def add_skill_offered(request):
+    blocked = _blocked_response(request)
+    if blocked:
+        return blocked
+
     if request.method == 'DELETE':
         serializer = SkillSerializer(data=request.data)
         if serializer.is_valid():
@@ -194,6 +232,10 @@ def add_skill_offered(request):
 
 @api_view(['DELETE'])
 def remove_skill_offered(request):
+    blocked = _blocked_response(request)
+    if blocked:
+        return blocked
+
     serializer = SkillSerializer(data=request.data)
     if serializer.is_valid():
         skill = serializer.validated_data['skill']
@@ -211,6 +253,10 @@ def remove_skill_offered(request):
 
 @api_view(['POST', 'DELETE'])
 def add_skill_wanted(request):
+    blocked = _blocked_response(request)
+    if blocked:
+        return blocked
+
     if request.method == 'DELETE':
         serializer = SkillSerializer(data=request.data)
         if serializer.is_valid():
@@ -241,6 +287,10 @@ def add_skill_wanted(request):
 
 @api_view(['DELETE'])
 def remove_skill_wanted(request):
+    blocked = _blocked_response(request)
+    if blocked:
+        return blocked
+
     serializer = SkillSerializer(data=request.data)
     if serializer.is_valid():
         skill = serializer.validated_data['skill']
@@ -258,8 +308,16 @@ def remove_skill_wanted(request):
 
 @api_view(['POST'])
 def add_review(request, id):
+    blocked = _blocked_response(request)
+    if blocked:
+        return blocked
+
     try:
         reviewee = User.objects.get(id=id)
+        if reviewee.is_blocked:
+            return Response({'error': 'Bad Request', 'message': 'Cannot review this user'}, status=status.HTTP_400_BAD_REQUEST)
+        if reviewee.id == request.user.id:
+            return Response({'error': 'Bad Request', 'message': 'You cannot review yourself'}, status=status.HTTP_400_BAD_REQUEST)
         rating = int(request.data.get('rating', 5))
         text = request.data.get('text', '')
 
@@ -274,11 +332,11 @@ def add_review(request, id):
             text=text
         )
 
-        # Update average rating
+        # Update average rating using DB aggregate to avoid loading all reviews in Python.
         reviews = Review.objects.filter(reviewee=reviewee)
-        avg = sum([r.rating for r in reviews]) / reviews.count()
-        reviewee.rating = round(avg, 1)
-        reviewee.rating_count = reviews.count()
+        agg = reviews.aggregate(avg_rating=Avg('rating'), total_reviews=Count('id'))
+        reviewee.rating = round(agg['avg_rating'] or 0, 1)
+        reviewee.rating_count = agg['total_reviews'] or 0
         reviewee.save()
 
         return Response(UserSerializer(reviewee).data)
@@ -287,8 +345,17 @@ def add_review(request, id):
 
 @api_view(['GET'])
 def get_user_by_id(request, id):
+    blocked = _blocked_response(request)
+    if blocked:
+        return blocked
+
     try:
-        user = User.objects.get(id=id)
+        user = User.objects.get(id=id, is_blocked=False)
+        if not user.is_public and request.user.id != user.id and not request.user.is_staff:
+            return Response({
+                'error': 'Forbidden',
+                'message': 'User profile is private'
+            }, status=status.HTTP_403_FORBIDDEN)
         serializer = UserSerializer(user)
         return Response(serializer.data)
     except User.DoesNotExist:

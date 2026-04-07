@@ -8,50 +8,103 @@ from notifications.models import Notification
 
 User = get_user_model()
 
+
+def _ensure_active_user(request):
+    if getattr(request.user, 'is_blocked', False):
+        return Response({
+            'error': 'Forbidden',
+            'message': 'Your account is blocked.'
+        }, status=status.HTTP_403_FORBIDDEN)
+    return None
+
+
+def _create_swap_request(request, data):
+    try:
+        receiver = User.objects.get(id=data['receiver_id'], is_blocked=False)
+    except User.DoesNotExist:
+        return Response({
+            'error': 'Bad Request',
+            'message': 'Receiver not found'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    if receiver.id == request.user.id:
+        return Response({
+            'error': 'Bad Request',
+            'message': 'You cannot send a request to yourself.'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    # Prevent duplicate pending requests
+    existing_request = SwapRequest.objects.filter(
+        sender=request.user,
+        receiver=receiver,
+        skill_offered=data['skill_offered'],
+        skill_requested=data['skill_requested'],
+        status='pending'
+    ).exists()
+
+    if existing_request:
+        return Response({
+            'error': 'Conflict',
+            'message': 'A pending request for these skills already exists.'
+        }, status=status.HTTP_409_CONFLICT)
+
+    swap_request = SwapRequest.objects.create(
+        sender=request.user,
+        receiver=receiver,
+        skill_offered=data['skill_offered'],
+        skill_requested=data['skill_requested'],
+        message=data.get('message', '')
+    )
+
+    Notification.objects.create(
+        user=receiver,
+        message=f"New skill swap request from {request.user.email}: {data['skill_offered']} for {data['skill_requested']}"
+    )
+
+    return Response(SwapRequestSerializer(swap_request).data, status=status.HTTP_201_CREATED)
+
 @api_view(['GET', 'POST'])
 def list_requests(request):
+    blocked_response = _ensure_active_user(request)
+    if blocked_response:
+        return blocked_response
+
     if request.method == 'POST':
         serializer = CreateSwapRequestSerializer(data=request.data)
         if serializer.is_valid():
-            data = serializer.validated_data
-            try:
-                receiver = User.objects.get(id=data['receiver_id'])
-            except User.DoesNotExist:
-                return Response({
-                    'error': 'Bad Request',
-                    'message': 'Receiver not found'
-                }, status=status.HTTP_400_BAD_REQUEST)
-            swap_request = SwapRequest.objects.create(
-                sender=request.user,
-                receiver=receiver,
-                skill_offered=data['skill_offered'],
-                skill_requested=data['skill_requested'],
-                message=data.get('message', '')
-            )
-            Notification.objects.create(
-                user=receiver,
-                message=f"New skill swap request from {request.user.email}: {data['skill_offered']} for {data['skill_requested']}"
-            )
-            return Response(SwapRequestSerializer(swap_request).data, status=status.HTTP_201_CREATED)
+            return _create_swap_request(request, serializer.validated_data)
         return Response({
             'error': 'Bad Request',
             'message': serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
+
     status_filter = request.GET.get('status')
     type_filter = request.GET.get('type')  # 'sent' or 'received'
-    page = int(request.GET.get('page', 1))
-    limit = int(request.GET.get('limit', 20))
-    
-    requests = SwapRequest.objects.all()
-    
-    if status_filter:
-        requests = requests.filter(status=status_filter)
-    
-    if type_filter == 'sent':
+    try:
+        page = max(int(request.GET.get('page', 1)), 1)
+        limit = max(min(int(request.GET.get('limit', 20)), 100), 1)
+    except (TypeError, ValueError):
+        return Response({
+            'error': 'Bad Request',
+            'message': 'Invalid pagination values'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    requests = SwapRequest.objects.select_related('sender', 'receiver')
+
+    if request.user.is_staff:
+        # Admin can inspect all requests unless explicitly filtered.
+        pass
+    elif type_filter == 'sent':
         requests = requests.filter(sender=request.user)
     elif type_filter == 'received':
         requests = requests.filter(receiver=request.user)
+    else:
+        # Safe default: only requests where current user is a participant.
+        requests = requests.filter(sender=request.user) | requests.filter(receiver=request.user)
     
+    if status_filter:
+        requests = requests.filter(status=status_filter)
+
     total = requests.count()
     start = (page - 1) * limit
     end = start + limit
@@ -68,48 +121,13 @@ def list_requests(request):
 
 @api_view(['POST'])
 def create_request(request):
+    blocked_response = _ensure_active_user(request)
+    if blocked_response:
+        return blocked_response
+
     serializer = CreateSwapRequestSerializer(data=request.data)
     if serializer.is_valid():
-        data = serializer.validated_data
-        
-        try:
-            receiver = User.objects.get(id=data['receiver_id'])
-        except User.DoesNotExist:
-            return Response({
-                'error': 'Bad Request',
-                'message': 'Receiver not found'
-            }, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Prevent duplicate pending requests
-        existing_request = SwapRequest.objects.filter(
-            sender=request.user,
-            receiver=receiver,
-            skill_offered=data['skill_offered'],
-            skill_requested=data['skill_requested'],
-            status='pending'
-        ).exists()
-
-        if existing_request:
-            return Response({
-                'error': 'Conflict',
-                'message': 'A pending request for these skills already exists.'
-            }, status=status.HTTP_409_CONFLICT)
-        
-        swap_request = SwapRequest.objects.create(
-            sender=request.user,
-            receiver=receiver,
-            skill_offered=data['skill_offered'],
-            skill_requested=data['skill_requested'],
-            message=data.get('message', '')
-        )
-        
-        # Create notification for receiver
-        Notification.objects.create(
-            user=receiver,
-            message=f"New skill swap request from {request.user.email}: {data['skill_offered']} for {data['skill_requested']}"
-        )
-        
-        return Response(SwapRequestSerializer(swap_request).data, status=status.HTTP_201_CREATED)
+        return _create_swap_request(request, serializer.validated_data)
     
     return Response({
         'error': 'Bad Request',
@@ -118,6 +136,10 @@ def create_request(request):
 
 @api_view(['PUT'])
 def accept_request(request, id):
+    blocked_response = _ensure_active_user(request)
+    if blocked_response:
+        return blocked_response
+
     try:
         swap_request = SwapRequest.objects.get(id=id, receiver=request.user, status='pending')
         
@@ -140,6 +162,10 @@ def accept_request(request, id):
 
 @api_view(['PUT'])
 def reject_request(request, id):
+    blocked_response = _ensure_active_user(request)
+    if blocked_response:
+        return blocked_response
+
     try:
         swap_request = SwapRequest.objects.get(id=id, receiver=request.user, status='pending')
         
@@ -162,6 +188,10 @@ def reject_request(request, id):
 
 @api_view(['PUT'])
 def complete_request(request, id):
+    blocked_response = _ensure_active_user(request)
+    if blocked_response:
+        return blocked_response
+
     try:
         swap_request = SwapRequest.objects.get(id=id, receiver=request.user, status='accepted')
         
@@ -184,6 +214,10 @@ def complete_request(request, id):
 
 @api_view(['DELETE'])
 def delete_request(request, id):
+    blocked_response = _ensure_active_user(request)
+    if blocked_response:
+        return blocked_response
+
     try:
         swap_request = SwapRequest.objects.get(id=id, sender=request.user)
         
@@ -206,6 +240,10 @@ def delete_request(request, id):
 
 @api_view(['PUT'])
 def update_milestone(request, id):
+    blocked_response = _ensure_active_user(request)
+    if blocked_response:
+        return blocked_response
+
     try:
         # Both sender and receiver can update milestone
         swap_request = SwapRequest.objects.get(id=id, status='accepted')
@@ -229,6 +267,10 @@ def update_milestone(request, id):
 
 @api_view(['GET', 'POST'])
 def swap_messages(request, id):
+    blocked_response = _ensure_active_user(request)
+    if blocked_response:
+        return blocked_response
+
     try:
         swap_request = SwapRequest.objects.get(id=id)
         if swap_request.sender != request.user and swap_request.receiver != request.user:

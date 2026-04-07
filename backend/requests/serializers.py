@@ -1,22 +1,33 @@
 from rest_framework import serializers
 from .models import SwapRequest
+from accounts.models import User
+
+
+class SwapUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            'id',
+            'first_name',
+            'email',
+            'location',
+            'profile_image',
+            'rating',
+            'rating_count',
+            'availability',
+            'skills_offered',
+            'skills_wanted',
+            'is_public',
+        ]
 
 class SwapRequestSerializer(serializers.ModelSerializer):
-    sender = serializers.SerializerMethodField()
-    receiver = serializers.SerializerMethodField()
+    sender = SwapUserSerializer(read_only=True)
+    receiver = SwapUserSerializer(read_only=True)
     
     class Meta:
         model = SwapRequest
         fields = ['id', 'sender', 'receiver', 'skill_offered', 'skill_requested', 'message', 'status', 'milestone', 'created_at']
     
-    def get_sender(self, obj):
-        from accounts.serializers import UserSerializer
-        return UserSerializer(obj.sender).data
-    
-    def get_receiver(self, obj):
-        from accounts.serializers import UserSerializer
-        return UserSerializer(obj.receiver).data
-
 class CreateSwapRequestSerializer(serializers.Serializer):
     receiver_id = serializers.IntegerField()
     skill_offered = serializers.CharField()

@@ -1,4 +1,5 @@
 import jwt
+from datetime import datetime, timedelta, timezone
 from django.conf import settings
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
@@ -33,9 +34,13 @@ class JWTAuthentication(BaseAuthentication):
             raise AuthenticationFailed('User not found')
 
 def generate_token(user):
+    now = datetime.now(timezone.utc)
+    expiry_hours = getattr(settings, 'JWT_EXPIRY_HOURS', 24)
     payload = {
         'userId': user.id,
         'email': user.email,
         'role': user.role,
+        'iat': int(now.timestamp()),
+        'exp': int((now + timedelta(hours=expiry_hours)).timestamp()),
     }
     return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm='HS256')
