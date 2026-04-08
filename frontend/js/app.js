@@ -557,7 +557,7 @@ const MessagesPage = () => {
         }
     };
 
-    if (loading) return <LoadingSkeleton />;
+    if (loading) return <Loading />;
 
     return (
         <div className="min-h-screen bg-slate-950 py-8">
