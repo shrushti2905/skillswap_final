@@ -783,7 +783,7 @@ const MessagesPage = () => {
         try {
             const data = await window.apiClient.getRequests();
             // Filter only accepted requests (active chats)
-            const accepted = data.filter(r => r.status === 'accepted');
+            const accepted = data.requests?.filter(r => r.status === 'accepted') || [];
             setActiveChats(accepted);
         } catch (e) {
             console.error(e);
@@ -795,71 +795,136 @@ const MessagesPage = () => {
     if (loading) return <Loading />;
 
     return (
-        <div className="min-h-screen bg-[#0b1220] py-8">
-            <div className="container mx-auto px-6">
-                <h1 className="text-4xl font-bold text-white mb-8 tracking-tight">Messages</h1>
+        <div className="min-h-screen bg-[#0B1120]">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <h1 className="text-3xl md:text-4xl font-bold text-white mb-8 tracking-tight">Messages</h1>
                 
                 {activeChats.length === 0 ? (
-                    <EmptyState 
-                        icon="💬" 
-                        title="No Active Chats" 
-                        description="Accept a swap request to start chatting with your swap partner."
-                        action={
-                            <a href="#discover" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-xl hover:brightness-110 hover:scale-105 transition-all duration-200 font-medium shadow-lg shadow-purple-500/30">
-                                Discover People
-                            </a>
-                        }
-                    />
+                    <div className="bg-[#1E293B] border border-white/8 rounded-2xl p-16 text-center">
+                        <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center">
+                            <span className="text-5xl opacity-60">💬</span>
+                        </div>
+                        <h3 className="text-xl font-semibold text-white mb-3">No Active Conversations</h3>
+                        <p className="text-gray-400 mb-6 max-w-md mx-auto leading-relaxed">
+                            Accept a swap request to start chatting with your swap partner.
+                        </p>
+                        <a href="#discover" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-xl hover:brightness-110 hover:scale-105 transition-all duration-200 font-medium shadow-lg shadow-purple-500/30">
+                            <span>Discover People</span>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                        </a>
+                    </div>
                 ) : (
                     <div className="grid lg:grid-cols-3 gap-6">
-                        {/* Chat List */}
-                        <div className="lg:col-span-1 bg-[#111827] border border-gray-700 rounded-2xl p-6 space-y-3 shadow-md">
-                            <h2 className="font-semibold text-white mb-4 text-lg tracking-tight">Active Chats</h2>
-                            {activeChats.map(chat => {
-                                const partner = chat.sender_id === user.id ? chat.receiver : chat.sender;
-                                const isSelected = selectedChat?.id === chat.id;
-                                
-                                return (
-                                    <button
-                                        key={chat.id}
-                                        onClick={() => setSelectedChat(chat)}
-                                        className={`w-full text-left p-4 rounded-xl transition-all duration-200 ${
-                                            isSelected 
-                                                ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg shadow-purple-500/20' 
-                                                : 'bg-[#0b1220] hover:bg-[#1f2937] text-slate-300 border border-gray-700'
-                                        }`}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-md">
-                                                {partner.first_name?.[0] || 'U'}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="font-medium truncate">{partner.first_name}</div>
-                                                <div className={`text-sm truncate ${isSelected ? 'text-purple-100' : 'text-slate-500'}`}>
-                                                    {chat.skill_offered} ↔ {chat.skill_requested}
+                        {/* Chat List - Desktop */}
+                        <div className="hidden lg:block lg:col-span-1">
+                            <div className="bg-[#1E293B] border border-white/8 rounded-2xl overflow-hidden sticky top-24">
+                                <div className="p-6 border-b border-white/8 bg-[#0F172A]">
+                                    <h2 className="font-semibold text-white text-lg">Active Chats</h2>
+                                    <p className="text-sm text-gray-400 mt-1">{activeChats.length} conversation{activeChats.length !== 1 ? 's' : ''}</p>
+                                </div>
+                                <div className="p-4 space-y-2 max-h-[calc(100vh-16rem)] overflow-y-auto">
+                                    {activeChats.map(chat => {
+                                        const partner = chat.sender.id === user.id ? chat.receiver : chat.sender;
+                                        const isSelected = selectedChat?.id === chat.id;
+                                        
+                                        return (
+                                            <button
+                                                key={chat.id}
+                                                onClick={() => setSelectedChat(chat)}
+                                                className={`w-full text-left p-4 rounded-xl transition-all duration-200 ${
+                                                    isSelected 
+                                                        ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg shadow-purple-500/20' 
+                                                        : 'bg-[#0F172A] hover:bg-[#1f2937] text-slate-300 border border-white/8'
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="relative flex-shrink-0">
+                                                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-md">
+                                                            {partner.first_name?.[0] || 'U'}
+                                                        </div>
+                                                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1E293B]"></div>
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="font-medium truncate">{partner.first_name}</div>
+                                                        <div className={`text-xs truncate ${isSelected ? 'text-purple-100' : 'text-gray-400'}`}>
+                                                            {chat.skill_offered} ↔ {chat.skill_requested}
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                    </button>
-                                );
-                            })}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Mobile Chat List */}
+                        <div className="lg:hidden">
+                            {!selectedChat && (
+                                <div className="bg-[#1E293B] border border-white/8 rounded-2xl overflow-hidden">
+                                    <div className="p-6 border-b border-white/8 bg-[#0F172A]">
+                                        <h2 className="font-semibold text-white text-lg">Active Chats</h2>
+                                        <p className="text-sm text-gray-400 mt-1">{activeChats.length} conversation{activeChats.length !== 1 ? 's' : ''}</p>
+                                    </div>
+                                    <div className="p-4 space-y-2">
+                                        {activeChats.map(chat => {
+                                            const partner = chat.sender.id === user.id ? chat.receiver : chat.sender;
+                                            
+                                            return (
+                                                <button
+                                                    key={chat.id}
+                                                    onClick={() => setSelectedChat(chat)}
+                                                    className="w-full text-left p-4 rounded-xl bg-[#0F172A] hover:bg-[#1f2937] text-slate-300 border border-white/8 transition-all duration-200"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="relative flex-shrink-0">
+                                                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-md">
+                                                                {partner.first_name?.[0] || 'U'}
+                                                            </div>
+                                                            <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1E293B]"></div>
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="font-medium truncate text-white">{partner.first_name}</div>
+                                                            <div className="text-xs truncate text-gray-400">
+                                                                {chat.skill_offered} ↔ {chat.skill_requested}
+                                                            </div>
+                                                        </div>
+                                                        <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Chat Panel */}
-                        <div className="lg:col-span-2">
+                        <div className={`lg:col-span-2 ${selectedChat ? 'block' : 'hidden lg:block'}`}>
                             {selectedChat ? (
-                                <ChatPanel
-                                    isOpen={true}
-                                    onClose={() => setSelectedChat(null)}
-                                    request={selectedChat}
-                                    currentUser={user}
-                                    embedded={true}
-                                />
+                                <div className="relative">
+                                    {/* Mobile Back Button */}
+                                    <button 
+                                        onClick={() => setSelectedChat(null)}
+                                        className="lg:hidden absolute top-4 left-4 z-10 w-10 h-10 rounded-full bg-[#0F172A] border border-white/8 flex items-center justify-center text-white hover:bg-[#1f2937] transition-colors"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                                    </button>
+                                    <ChatPanel
+                                        isOpen={true}
+                                        onClose={() => setSelectedChat(null)}
+                                        request={selectedChat}
+                                        currentUser={user}
+                                        embedded={true}
+                                    />
+                                </div>
                             ) : (
-                                <div className="bg-[#111827] border border-gray-700 rounded-2xl p-16 text-center shadow-md">
-                                    <div className="text-7xl mb-6 opacity-50">💬</div>
-                                    <h3 className="text-2xl font-semibold text-white mb-3 tracking-tight">Select a Chat</h3>
-                                    <p className="text-slate-400">Choose a conversation from the list to start messaging</p>
+                                <div className="bg-[#1E293B] border border-white/8 rounded-2xl p-16 text-center">
+                                    <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center">
+                                        <span className="text-5xl opacity-60">💬</span>
+                                    </div>
+                                    <h3 className="text-xl font-semibold text-white mb-3">Select a Chat</h3>
+                                    <p className="text-gray-400">Choose a conversation from the list to start messaging</p>
                                 </div>
                             )}
                         </div>
@@ -1204,6 +1269,264 @@ const ProfilePage = () => {
     if (profile.skills_offered?.length > 0 || profile.skills_wanted?.length > 0) completeness += 20;
 
     return (
+        <div className="min-h-screen bg-[#0B1120] py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Progress Bar */}
+            {completeness < 100 && (
+                <div className="bg-purple-500/10 border border-purple-500/20 rounded-2xl p-6 mb-8">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-3">
+                        <span className="font-semibold text-purple-300 text-lg">Complete your profile to get 3x more matches!</span>
+                        <span className="text-sm text-purple-400 font-bold bg-purple-500/20 px-4 py-2 rounded-full">{completeness}% Complete</span>
+                    </div>
+                    <div className="h-3 bg-[#1E293B] rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-1000 shadow-lg shadow-purple-500/30" style={{ width: `${completeness}%` }}></div>
+                    </div>
+                </div>
+            )}
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Left Column: Profile Card & Stats */}
+                <div className="lg:col-span-1 space-y-6">
+                    {/* Profile Card */}
+                    <div className="bg-[#1E293B] border border-white/8 rounded-2xl p-8 text-center">
+                        <div className="relative inline-block mb-6">
+                            {profile.profile_image ? (
+                                <img src={profile.profile_image} alt={profile.first_name} className="w-32 h-32 rounded-full object-cover border-4 border-purple-500 shadow-xl shadow-purple-500/30" />
+                            ) : (
+                                <div className="w-32 h-32 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-4xl border-4 border-purple-500 shadow-xl shadow-purple-500/30">
+                                    {profile.first_name ? profile.first_name[0].toUpperCase() : 'U'}
+                                </div>
+                            )}
+                        </div>
+                        <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">{profile.first_name || 'Unknown'}</h2>
+                        <p className="text-gray-400 mb-4 text-sm">{profile.email}</p>
+                        
+                        {profile.location && (
+                            <p className="text-gray-300 text-sm flex items-center justify-center gap-2 mb-6 bg-[#0F172A] py-2 px-4 rounded-lg">
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path></svg>
+                                {profile.location}
+                            </p>
+                        )}
+                        
+                        <div className="flex items-center justify-center gap-2 text-yellow-400 mb-6 bg-[#0F172A] py-3 px-4 rounded-lg">
+                            <span className="text-2xl">⭐</span>
+                            <span className="font-bold text-xl">{profile.rating ? profile.rating.toFixed(1) : 'New'}</span>
+                            <span className="text-gray-500 text-sm">({profile.rating_count || 0} reviews)</span>
+                        </div>
+                        
+                        <button
+                            onClick={() => setEditing(!editing)}
+                            className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-6 py-3 rounded-xl hover:brightness-110 hover:scale-105 transition-all duration-200 font-medium shadow-lg shadow-purple-500/30"
+                        >
+                            {editing ? '← Cancel' : '✏️ Edit Profile'}
+                        </button>
+                    </div>
+
+                    {/* Stats Card */}
+                    <div className="bg-[#1E293B] border border-white/8 rounded-2xl p-6">
+                        <h3 className="font-bold text-white mb-6 text-lg">Swap Statistics</h3>
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center p-4 bg-[#0F172A] rounded-xl border border-white/8">
+                                <span className="text-gray-400 font-medium">Total Swaps</span>
+                                <span className="font-bold text-white text-lg">{stats.total}</span>
+                            </div>
+                            <div className="flex justify-between items-center p-4 bg-[#0F172A] rounded-xl border border-white/8">
+                                <span className="text-gray-400 font-medium">Completed</span>
+                                <span className="font-bold text-green-400 text-lg">{stats.completed}</span>
+                            </div>
+                            <div className="flex justify-between items-center p-4 bg-[#0F172A] rounded-xl border border-white/8">
+                                <span className="text-gray-400 font-medium">Pending</span>
+                                <span className="font-bold text-yellow-400 text-lg">{stats.pending}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right Column: Details */}
+                <div className="lg:col-span-2 space-y-6">
+                    {editing ? (
+                        <div className="bg-[#1E293B] border border-white/8 rounded-2xl p-8 animate-in fade-in">
+                            <h3 className="font-bold text-2xl text-white mb-6">Edit Profile</h3>
+                            <div className="space-y-5">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-2">Full Name</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-4 py-3 rounded-xl bg-[#0F172A] border border-white/8 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                        placeholder="Enter your name"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-2">Bio</label>
+                                    <textarea
+                                        className="w-full px-4 py-3 rounded-xl bg-[#0F172A] border border-white/8 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all resize-none"
+                                        rows="4"
+                                        value={formData.bio}
+                                        onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                                        placeholder="Tell us about yourself..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-2">Location</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-4 py-3 rounded-xl bg-[#0F172A] border border-white/8 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                                        value={formData.location}
+                                        onChange={(e) => setFormData({...formData, location: e.target.value})}
+                                        placeholder="City, Country"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-2">Profile Image URL</label>
+                                    <input
+                                        type="url"
+                                        className="w-full px-4 py-3 rounded-xl bg-[#0F172A] border border-white/8 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                                        value={formData.profile_image}
+                                        onChange={(e) => setFormData({...formData, profile_image: e.target.value})}
+                                        placeholder="https://example.com/image.jpg"
+                                    />
+                                </div>
+                                <div className="flex items-center gap-3 p-4 bg-[#0F172A] rounded-xl border border-white/8">
+                                    <input
+                                        type="checkbox"
+                                        id="is_public"
+                                        className="w-5 h-5 text-purple-600 bg-[#1E293B] border-white/8 rounded focus:ring-purple-500 focus:ring-2"
+                                        checked={formData.is_public}
+                                        onChange={(e) => setFormData({...formData, is_public: e.target.checked})}
+                                    />
+                                    <label htmlFor="is_public" className="text-sm font-medium text-gray-300">Make my profile public</label>
+                                </div>
+                                <div className="flex justify-end gap-3 pt-6 border-t border-white/8">
+                                    <button
+                                        onClick={() => setEditing(false)}
+                                        className="px-6 py-3 rounded-xl bg-[#0F172A] border border-white/8 text-gray-300 hover:text-white hover:bg-[#1f2937] transition-all duration-200 font-medium"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={updateProfile}
+                                        disabled={loading}
+                                        className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:brightness-110 disabled:opacity-50 font-medium shadow-lg shadow-purple-500/30 transition-all duration-200"
+                                    >
+                                        {loading ? 'Saving...' : 'Save Changes'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            {/* About Me */}
+                            <div className="bg-[#1E293B] border border-white/8 rounded-2xl p-8">
+                                <h3 className="font-bold text-xl text-white mb-4">About Me</h3>
+                                {profile.bio ? (
+                                    <p className="text-gray-300 leading-relaxed">{profile.bio}</p>
+                                ) : (
+                                    <p className="text-gray-500 italic">No bio provided yet. Click "Edit Profile" to add one.</p>
+                                )}
+                            </div>
+
+                            {/* Skills Offered */}
+                            <div className="bg-[#1E293B] border border-white/8 rounded-2xl p-8">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="font-bold text-xl text-white">Skills Offered</h3>
+                                    <button
+                                        onClick={() => {
+                                            const skill = prompt('Enter skill you can offer:');
+                                            if (skill) addSkill('offered', skill);
+                                        }}
+                                        className="text-purple-400 hover:text-purple-300 text-sm font-medium px-4 py-2 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 transition-all duration-200 border border-purple-500/20"
+                                    >
+                                        + Add Skill
+                                    </button>
+                                </div>
+                                <div className="flex flex-wrap gap-3">
+                                    {profile.skills_offered && profile.skills_offered.length > 0 ? (
+                                        profile.skills_offered.map((skill, index) => (
+                                            <span key={index} className="bg-green-500/10 border border-green-500/20 text-green-400 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-green-500/20 transition-all">
+                                                {skill}
+                                                <button
+                                                    onClick={() => removeSkill('offered', skill)}
+                                                    className="text-green-500 hover:text-green-300 w-5 h-5 flex items-center justify-center rounded-full hover:bg-green-500/30 transition-colors"
+                                                >
+                                                    ×
+                                                </button>
+                                            </span>
+                                        ))
+                                    ) : (
+                                        <p className="text-gray-500 text-sm italic w-full">You haven't added any skills to offer yet.</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Skills Wanted */}
+                            <div className="bg-[#1E293B] border border-white/8 rounded-2xl p-8">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="font-bold text-xl text-white">Skills Wanted</h3>
+                                    <button
+                                        onClick={() => {
+                                            const skill = prompt('Enter skill you want to learn:');
+                                            if (skill) addSkill('wanted', skill);
+                                        }}
+                                        className="text-purple-400 hover:text-purple-300 text-sm font-medium px-4 py-2 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 transition-all duration-200 border border-purple-500/20"
+                                    >
+                                        + Add Skill
+                                    </button>
+                                </div>
+                                <div className="flex flex-wrap gap-3">
+                                    {profile.skills_wanted && profile.skills_wanted.length > 0 ? (
+                                        profile.skills_wanted.map((skill, index) => (
+                                            <span key={index} className="bg-purple-500/10 border border-purple-500/20 text-purple-400 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-purple-500/20 transition-all">
+                                                {skill}
+                                                <button
+                                                    onClick={() => removeSkill('wanted', skill)}
+                                                    className="text-purple-500 hover:text-purple-300 w-5 h-5 flex items-center justify-center rounded-full hover:bg-purple-500/30 transition-colors"
+                                                >
+                                                    ×
+                                                </button>
+                                            </span>
+                                        ))
+                                    ) : (
+                                        <p className="text-gray-500 text-sm italic w-full">You haven't added any skills you want to learn yet.</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Reviews */}
+                            <div className="bg-[#1E293B] border border-white/8 rounded-2xl p-8">
+                                <h3 className="font-bold text-xl text-white mb-6">My Reviews</h3>
+                                {profile.reviews && profile.reviews.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {profile.reviews.map(rev => (
+                                            <div key={rev.id} className="bg-[#0F172A] p-5 rounded-xl border border-white/8">
+                                                <div className="flex justify-between items-center mb-3">
+                                                    <span className="font-semibold text-white">{rev.reviewer_name}</span>
+                                                    <span className="text-yellow-400 text-lg">{"⭐".repeat(rev.rating)}</span>
+                                                </div>
+                                                <p className="text-gray-300 text-sm leading-relaxed">{rev.text}</p>
+                                                <div className="text-xs text-gray-500 mt-3">{new Date(rev.created_at).toLocaleDateString()}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-12">
+                                        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 flex items-center justify-center">
+                                            <span className="text-4xl opacity-60">⭐</span>
+                                        </div>
+                                        <h4 className="text-lg font-semibold text-white mb-2">No Reviews Yet</h4>
+                                        <p className="text-gray-400 text-sm">Complete swaps to get reviews from your partners.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
+                </div>
+            </div>
+        </div>
+        </div>
+    );
+};
         <div className="container mx-auto px-4 py-8 text-slate-100 max-w-5xl">
             {completeness < 100 && (
                 <div className="bg-brand-600/20 border border-brand-500/30 rounded-2xl p-4 mb-6">
