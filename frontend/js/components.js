@@ -1,4 +1,4 @@
-const { useState, useEffect, createContext, useContext } = React;
+const { useState, useEffect, createContext, useContext, useRef } = React;
 
 // Auth Context
 const AuthContext = createContext();
@@ -73,7 +73,24 @@ const Navigation = ({ openAuthModal }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const isAdmin = user && user.role === 'admin';
+  const dropdownRef = useRef(null);
+  const profileDropdownRef = useRef(null);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setShowProfileDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (user && !isAdmin) {
@@ -112,24 +129,27 @@ const Navigation = ({ openAuthModal }) => {
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
-  const NavLink = ({ href, children }) => (
-    <a href={href} className="px-3 py-2 rounded-md text-sm font-medium text-slate-200 hover:text-white hover:bg-slate-700/60">
-      {children}
-    </a>
-  );
+  const NavLink = ({ href, children }) => {
+    const isActive = window.location.hash === href;
+    return (
+      <a href={href} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${isActive ? 'text-white bg-gradient-to-r from-purple-500 to-indigo-500 shadow-lg shadow-purple-500/20' : 'text-slate-300 hover:text-white hover:bg-slate-800/60'}`}>
+        {children}
+      </a>
+    );
+  };
   return (
-    <nav className="backdrop-blur bg-slate-900/70 border-b border-slate-800 relative z-40">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center py-3">
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => window.location.hash = user ? (isAdmin ? '#admin-overview' : '#discover') : '#'}>
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center font-bold text-white">SS</div>
-            <h1 className="text-xl font-semibold text-white">SkillSwap</h1>
+    <nav className="bg-[#0f172a] backdrop-blur-sm bg-opacity-95 border-b border-gray-800 shadow-md relative z-40">
+      <div className="container mx-auto px-6">
+        <div className="flex justify-between items-center py-4">
+          <div className="flex items-center space-x-3 cursor-pointer group" onClick={() => window.location.hash = user ? (isAdmin ? '#admin-overview' : '#discover') : '#'}>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center font-bold text-white shadow-lg shadow-purple-500/30 group-hover:scale-105 transition-transform duration-200">SS</div>
+            <h1 className="text-xl font-bold text-white tracking-tight">SkillSwap</h1>
           </div>
-          <div className="hidden md:flex items-center space-x-1">
+          <div className="hidden md:flex items-center gap-2">
             {!user && (
               <>
-                <button onClick={() => openAuthModal('login')} className="px-3 py-2 rounded-md text-sm font-medium text-slate-200 hover:text-white hover:bg-slate-700/60">Login</button>
-                <button onClick={() => openAuthModal('signup')} className="ml-2 bg-gradient-to-r from-brand-500 to-brand-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:from-brand-600 hover:to-brand-700">Sign Up</button>
+                <button onClick={() => openAuthModal('login')} className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition-all duration-200">Login</button>
+                <button onClick={() => openAuthModal('signup')} className="ml-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-5 py-2 rounded-lg text-sm font-medium hover:brightness-110 hover:scale-105 transition-all duration-200 shadow-lg shadow-purple-500/30">Sign Up</button>
               </>
             )}
             {user && !isAdmin && (
@@ -139,8 +159,8 @@ const Navigation = ({ openAuthModal }) => {
                 <NavLink href="#requests">My Swaps</NavLink>
                 <NavLink href="#profile">Profile</NavLink>
                 
-                <div className="relative ml-2">
-                  <button onClick={() => setShowDropdown(!showDropdown)} className="relative p-2 text-slate-300 hover:text-white rounded-full hover:bg-slate-800 transition-colors">
+                <div className="relative ml-2" ref={dropdownRef}>
+                  <button onClick={() => { setShowDropdown(!showDropdown); setShowProfileDropdown(false); }} className="relative p-2 text-slate-300 hover:text-white rounded-full hover:bg-slate-800 transition-all duration-200">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
                     {unreadCount > 0 && (
                       <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-slate-900"></span>
@@ -148,19 +168,19 @@ const Navigation = ({ openAuthModal }) => {
                   </button>
                   
                   {showDropdown && (
-                    <div className="absolute right-0 mt-2 w-80 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2">
-                      <div className="p-3 border-b border-slate-700 flex justify-between items-center bg-slate-900/50">
+                    <div className="absolute right-0 mt-2 w-80 bg-[#111827] border border-gray-700 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 z-50">
+                      <div className="p-4 border-b border-gray-700 flex justify-between items-center bg-[#0b1220]">
                         <h3 className="font-semibold text-white">Notifications</h3>
                         {unreadCount > 0 && (
-                          <button onClick={markAllRead} className="text-xs text-brand-400 hover:text-brand-300">Mark all read</button>
+                          <button onClick={markAllRead} className="text-xs text-purple-400 hover:text-purple-300 transition-colors duration-200">Mark all read</button>
                         )}
                       </div>
                       <div className="max-h-80 overflow-y-auto">
                         {notifications.length === 0 ? (
-                          <div className="p-6 text-center text-slate-400 text-sm">No notifications yet.</div>
+                          <div className="p-8 text-center text-slate-400 text-sm">No notifications yet.</div>
                         ) : (
                           notifications.map(n => (
-                            <div key={n.id} onClick={() => markRead(n.id)} className={`p-4 border-b border-slate-700/50 cursor-pointer hover:bg-slate-700/50 transition-colors ${!n.is_read ? 'bg-slate-800/80' : 'bg-transparent'}`}>
+                            <div key={n.id} onClick={() => markRead(n.id)} className={`p-4 border-b border-gray-700/50 cursor-pointer hover:bg-[#1f2937] transition-all duration-200 ${!n.is_read ? 'bg-[#1f2937]/50' : 'bg-transparent'}`}>
                               <p className={`text-sm ${!n.is_read ? 'text-white font-medium' : 'text-slate-300'}`}>{n.message}</p>
                               <span className="text-[10px] text-slate-500 mt-1 block">{new Date(n.created_at).toLocaleTimeString()}</span>
                             </div>
@@ -171,7 +191,26 @@ const Navigation = ({ openAuthModal }) => {
                   )}
                 </div>
 
-                <button onClick={logout} className="ml-4 bg-slate-700 text-white px-3 py-2 rounded-md text-sm hover:bg-slate-600">Sign Out</button>
+                <div className="relative ml-2" ref={profileDropdownRef}>
+                  <button onClick={() => { setShowProfileDropdown(!showProfileDropdown); setShowDropdown(false); }} className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition-all duration-200">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs">
+                      {user.first_name?.[0] || 'U'}
+                    </div>
+                  </button>
+                  {showProfileDropdown && (
+                    <div className="absolute right-0 mt-2 w-48 bg-[#111827] border border-gray-700 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 z-50">
+                      <a href="#profile" className="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-[#1f2937] hover:text-white transition-all duration-200">
+                        <span>👤</span>
+                        <span>Profile</span>
+                      </a>
+                      <div className="border-t border-gray-700"></div>
+                      <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all duration-200">
+                        <span>🚪</span>
+                        <span>Logout</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
               </>
             )}
             {user && isAdmin && (
@@ -179,7 +218,21 @@ const Navigation = ({ openAuthModal }) => {
                 <NavLink href="#admin-overview">Overview</NavLink>
                 <NavLink href="#admin-stats">Stats</NavLink>
                 <NavLink href="#admin-users">Users</NavLink>
-                <button onClick={logout} className="ml-2 bg-slate-700 text-white px-3 py-2 rounded-md text-sm hover:bg-slate-600">Sign Out</button>
+                <div className="relative ml-2" ref={profileDropdownRef}>
+                  <button onClick={() => setShowProfileDropdown(!showProfileDropdown)} className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition-all duration-200">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs">
+                      A
+                    </div>
+                  </button>
+                  {showProfileDropdown && (
+                    <div className="absolute right-0 mt-2 w-48 bg-[#111827] border border-gray-700 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 z-50">
+                      <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all duration-200">
+                        <span>🚪</span>
+                        <span>Logout</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
               </>
             )}
           </div>

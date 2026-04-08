@@ -56,24 +56,24 @@ const UserDetailModal = ({ isOpen, onClose, userItem, onSwapRequest }) => {
     if (!isOpen || !userItem) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" onClick={onClose}></div>
-            <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
-                <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose}></div>
+            <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[#111827] border border-gray-700 rounded-2xl p-8 shadow-2xl animate-in fade-in zoom-in duration-200">
+                <button onClick={onClose} className="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors duration-200">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
-                <div className="flex items-center gap-6 mb-6">
+                <div className="flex items-center gap-6 mb-8">
                     {userItem.profile_image ? (
-                        <img src={userItem.profile_image} alt={userItem.first_name} className="w-20 h-20 rounded-full object-cover border-2 border-brand-500" />
+                        <img src={userItem.profile_image} alt={userItem.first_name} className="w-24 h-24 rounded-2xl object-cover border-2 border-purple-500 shadow-lg shadow-purple-500/30" />
                     ) : (
-                        <div className="w-20 h-20 bg-gradient-to-br from-brand-500 to-brand-700 rounded-full flex items-center justify-center text-white font-bold text-2xl border-2 border-brand-500">
+                        <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold text-3xl border-2 border-purple-500 shadow-lg shadow-purple-500/30">
                             {userItem.first_name ? userItem.first_name[0].toUpperCase() : 'U'}
                         </div>
                     )}
                     <div>
-                        <h2 className="text-2xl font-bold text-white">{userItem.first_name || 'Unknown'}</h2>
-                        <p className="text-slate-400">{userItem.location || 'Unknown Location'}</p>
-                        <div className="flex items-center gap-1 text-yellow-400 mt-1">
+                        <h2 className="text-3xl font-bold text-white tracking-tight mb-1">{userItem.first_name || 'Unknown'}</h2>
+                        <p className="text-slate-400 mb-2">{userItem.location || 'Unknown Location'}</p>
+                        <div className="flex items-center gap-1 text-yellow-400">
                             <span>⭐</span>
                             <span className="font-semibold">{userItem.rating ? userItem.rating.toFixed(1) : 'New'}</span>
                             <span className="text-slate-500 text-sm">({userItem.rating_count || 0} reviews)</span>
@@ -82,38 +82,38 @@ const UserDetailModal = ({ isOpen, onClose, userItem, onSwapRequest }) => {
                 </div>
                 
                 {userItem.bio && (
-                    <div className="mb-6">
-                        <h3 className="font-semibold text-slate-300 mb-2">About Me</h3>
-                        <p className="text-slate-400 bg-slate-900/50 p-4 rounded-xl border border-slate-700/50">{userItem.bio}</p>
+                    <div className="mb-8">
+                        <h3 className="font-semibold text-slate-300 mb-3 text-lg">About Me</h3>
+                        <p className="text-slate-400 bg-[#0b1220] p-5 rounded-xl border border-gray-700/50">{userItem.bio}</p>
                     </div>
                 )}
                 
-                <div className="grid md:grid-cols-2 gap-6 mb-6">
+                <div className="grid md:grid-cols-2 gap-6 mb-8">
                     <div>
-                        <h3 className="font-semibold text-slate-300 mb-3">Skills Offered</h3>
+                        <h3 className="font-semibold text-slate-300 mb-4 text-lg">Skills Offered</h3>
                         <div className="flex flex-wrap gap-2">
                             {userItem.skills_offered?.map((s, i) => (
-                                <span key={i} className="bg-green-500/10 text-green-400 px-3 py-1 rounded-full text-sm border border-green-500/20">{s}</span>
+                                <span key={i} className="bg-green-500/10 text-green-400 px-4 py-2 rounded-full text-sm border border-green-500/20 font-medium">{s}</span>
                             ))}
                         </div>
                     </div>
                     <div>
-                        <h3 className="font-semibold text-slate-300 mb-3">Skills Wanted</h3>
+                        <h3 className="font-semibold text-slate-300 mb-4 text-lg">Skills Wanted</h3>
                         <div className="flex flex-wrap gap-2">
                             {userItem.skills_wanted?.map((s, i) => (
-                                <span key={i} className="bg-brand-500/10 text-brand-400 px-3 py-1 rounded-full text-sm border border-brand-500/20">{s}</span>
+                                <span key={i} className="bg-purple-500/10 text-purple-400 px-4 py-2 rounded-full text-sm border border-purple-500/20 font-medium">{s}</span>
                             ))}
                         </div>
                     </div>
                 </div>
 
                 {userItem.reviews && userItem.reviews.length > 0 && (
-                    <div className="mb-6">
-                        <h3 className="font-semibold text-slate-300 mb-3">Recent Reviews</h3>
+                    <div className="mb-8">
+                        <h3 className="font-semibold text-slate-300 mb-4 text-lg">Recent Reviews</h3>
                         <div className="space-y-3 max-h-40 overflow-y-auto pr-2">
                             {userItem.reviews.map((rev) => (
-                                <div key={rev.id} className="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
-                                    <div className="flex justify-between items-center mb-1">
+                                <div key={rev.id} className="bg-[#0b1220] p-4 rounded-xl border border-gray-700/50">
+                                    <div className="flex justify-between items-center mb-2">
                                         <span className="font-medium text-slate-200">{rev.reviewer_name}</span>
                                         <span className="text-yellow-400 text-sm">{"⭐".repeat(rev.rating)}</span>
                                     </div>
@@ -125,7 +125,7 @@ const UserDetailModal = ({ isOpen, onClose, userItem, onSwapRequest }) => {
                 )}
 
                 <button onClick={() => { onClose(); onSwapRequest(userItem); }}
-                    className="w-full bg-brand-600 text-white py-3 rounded-xl hover:bg-brand-500 transition-colors font-medium shadow-lg shadow-brand-500/20">
+                    className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white py-4 rounded-xl hover:brightness-110 hover:scale-[1.02] transition-all duration-200 font-medium shadow-lg shadow-purple-500/30">
                     Request Swap
                 </button>
             </div>
@@ -161,11 +161,12 @@ const UserCardSkeleton = () => (
 );
 
 // Empty State Component
-const EmptyState = ({ icon, title, description }) => (
-    <div className="text-center py-16 bg-slate-800/40 border border-slate-700/50 rounded-2xl my-6 flex flex-col items-center justify-center">
-        <div className="text-5xl mb-4">{icon}</div>
-        <h3 className="text-xl font-bold text-white mb-2">{title}</h3>
-        <p className="text-slate-400 max-w-md mx-auto">{description}</p>
+const EmptyState = ({ icon, title, description, action }) => (
+    <div className="text-center py-20 bg-[#111827] border border-gray-700 rounded-2xl my-8 flex flex-col items-center justify-center shadow-md">
+        <div className="text-7xl mb-6 opacity-50">{icon}</div>
+        <h3 className="text-2xl font-bold text-white mb-3 tracking-tight">{title}</h3>
+        <p className="text-slate-400 max-w-md mx-auto mb-6 leading-relaxed">{description}</p>
+        {action && action}
     </div>
 );
 
@@ -264,18 +265,18 @@ const DiscoverPage = () => {
     };
 
     const renderUserCard = (userItem, isLast) => (
-        <div ref={isLast ? lastUserElementRef : null} key={userItem.id} onClick={() => setDetailModal({ open: true, user: userItem })} className="cursor-pointer group bg-slate-800/40 border border-slate-700/50 hover:border-brand-500/50 rounded-2xl shadow-md p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-brand-500/10 hover:shadow-lg flex flex-col h-full">
-            <div className="flex items-center mb-5">
+        <div ref={isLast ? lastUserElementRef : null} key={userItem.id} onClick={() => setDetailModal({ open: true, user: userItem })} className="cursor-pointer group bg-[#111827] border border-gray-700 hover:border-purple-500/50 rounded-2xl shadow-md p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-purple-500/10 flex flex-col h-full">
+            <div className="flex items-center mb-6">
                 {userItem.profile_image ? (
-                    <img src={userItem.profile_image} alt={userItem.first_name} className="w-14 h-14 rounded-full object-cover border-2 border-slate-700 group-hover:border-brand-500 transition-colors" />
+                    <img src={userItem.profile_image} alt={userItem.first_name} className="w-16 h-16 rounded-2xl object-cover border-2 border-gray-700 group-hover:border-purple-500 transition-colors duration-200 shadow-md" />
                 ) : (
-                    <div className="w-14 h-14 bg-gradient-to-br from-brand-500 to-brand-700 rounded-full flex items-center justify-center text-white font-bold text-xl border-2 border-slate-700 group-hover:border-brand-500 transition-colors">
+                    <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl border-2 border-gray-700 group-hover:border-purple-500 transition-colors duration-200 shadow-lg shadow-purple-500/20">
                         {userItem.first_name ? userItem.first_name[0].toUpperCase() : 'U'}
                     </div>
                 )}
-                <div className="ml-4">
-                    <h3 className="font-semibold text-lg text-white group-hover:text-brand-400 transition-colors">{userItem.first_name || 'Unknown'}</h3>
-                    <p className="text-slate-400 text-sm flex items-center gap-1">
+                <div className="ml-4 flex-1">
+                    <h3 className="font-semibold text-lg text-white group-hover:text-purple-400 transition-colors duration-200 tracking-tight">{userItem.first_name || 'Unknown'}</h3>
+                    <p className="text-slate-400 text-sm flex items-center gap-1 mt-1">
                         <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path></svg>
                         {userItem.location || 'Unknown Location'}
                     </p>
@@ -283,16 +284,16 @@ const DiscoverPage = () => {
             </div>
             
             {userItem.bio && (
-                <p className="text-slate-300 text-sm mb-5 line-clamp-2">{userItem.bio}</p>
+                <p className="text-slate-300 text-sm mb-6 line-clamp-2 leading-relaxed">{userItem.bio}</p>
             )}
             
-            <div className="mb-4 flex-grow">
-                <div className="mb-3">
-                    <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Offers</h4>
-                    <div className="flex flex-wrap gap-1.5">
+            <div className="mb-6 flex-grow">
+                <div className="mb-4">
+                    <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Offers</h4>
+                    <div className="flex flex-wrap gap-2">
                         {userItem.skills_offered && userItem.skills_offered.length > 0 ? (
                             userItem.skills_offered.slice(0,3).map((skill, idx) => (
-                                <span key={idx} className="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded-full text-xs font-medium">
+                                <span key={idx} className="bg-green-500/10 text-green-400 border border-green-500/20 px-3 py-1.5 rounded-full text-xs font-medium">
                                     {skill}
                                 </span>
                             ))
@@ -303,7 +304,7 @@ const DiscoverPage = () => {
             
             <button
                 onClick={(e) => { e.stopPropagation(); setRequestModal({ open: true, user: userItem }); }}
-                className="w-full mt-auto bg-slate-700/50 text-brand-300 hover:text-white border border-brand-500/30 py-2.5 rounded-xl font-medium transition-all group-hover:bg-brand-600 group-hover:border-brand-500"
+                className="w-full mt-auto bg-gradient-to-r from-purple-500 to-indigo-500 text-white py-3 rounded-xl font-medium transition-all duration-200 hover:brightness-110 hover:scale-[1.02] shadow-lg shadow-purple-500/20"
             >
                 Request Swap
             </button>
@@ -311,34 +312,35 @@ const DiscoverPage = () => {
     );
 
     return (
-        <div className="container mx-auto px-4 py-8 text-slate-100">
+        <div className="min-h-screen bg-[#0b1220] py-8">
+            <div className="container mx-auto px-6 text-slate-100">
             {toast.show && (
-                <div className={`fixed top-20 right-4 p-4 rounded-lg shadow-lg z-50 transition-all ${toast.type === 'error' ? 'bg-red-500/90 text-white' : 'bg-green-500/90 text-white'}`}>
+                <div className={`fixed top-24 right-6 p-4 rounded-xl shadow-2xl z-50 transition-all animate-in slide-in-from-right duration-300 ${toast.type === 'error' ? 'bg-red-500/90 text-white border border-red-400' : 'bg-green-500/90 text-white border border-green-400'}`}>
                     {toast.message}
                 </div>
             )}
             
-            <h1 className="text-3xl font-bold mb-8 text-white">Discover Skills & People</h1>
+            <h1 className="text-4xl font-bold mb-8 text-white tracking-tight">Discover Skills & People</h1>
             
             {/* Advanced Filtering & Sorting */}
-            <div className="mb-8 grid grid-cols-1 md:grid-cols-4 gap-4 bg-slate-800/60 p-4 rounded-xl border border-slate-700">
+            <div className="mb-8 grid grid-cols-1 md:grid-cols-4 gap-4 bg-[#111827] p-6 rounded-2xl border border-gray-700 shadow-md">
                 <div className="relative">
-                    <input type="text" placeholder="Search name/location..." className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-slate-900/70 border border-slate-700 text-slate-100 focus:ring-2 focus:ring-brand-600" value={search} onChange={e => setSearch(e.target.value)} />
-                    <span className="absolute left-3 top-3 text-slate-400">🔍</span>
+                    <input type="text" placeholder="Search name/location..." className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#0b1220] border border-gray-700 text-slate-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" value={search} onChange={e => setSearch(e.target.value)} />
+                    <span className="absolute left-3 top-3.5 text-slate-400">🔍</span>
                 </div>
                 <div className="relative">
-                    <input type="text" placeholder="Filter by skill..." className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-slate-900/70 border border-slate-700 text-slate-100 focus:ring-2 focus:ring-brand-600" value={skillFilter} onChange={e => setSkillFilter(e.target.value)} />
-                    <span className="absolute left-3 top-3 text-slate-400">🏷️</span>
+                    <input type="text" placeholder="Filter by skill..." className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#0b1220] border border-gray-700 text-slate-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" value={skillFilter} onChange={e => setSkillFilter(e.target.value)} />
+                    <span className="absolute left-3 top-3.5 text-slate-400">🏷️</span>
                 </div>
                 <div>
-                    <select className="w-full px-4 py-2.5 rounded-lg bg-slate-900/70 border border-slate-700 text-slate-100 focus:ring-2 focus:ring-brand-600" value={sort} onChange={e => setSort(e.target.value)}>
+                    <select className="w-full px-4 py-3 rounded-xl bg-[#0b1220] border border-gray-700 text-slate-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" value={sort} onChange={e => setSort(e.target.value)}>
                         <option value="">Sort By...</option>
                         <option value="highest_rated">Highest Rated</option>
                         <option value="online_now">Online Now</option>
                     </select>
                 </div>
                 <div>
-                    <select className="w-full px-4 py-2.5 rounded-lg bg-slate-900/70 border border-slate-700 text-slate-100 focus:ring-2 focus:ring-brand-600" value={availability} onChange={e => setAvailability(e.target.value)}>
+                    <select className="w-full px-4 py-3 rounded-xl bg-[#0b1220] border border-gray-700 text-slate-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" value={availability} onChange={e => setAvailability(e.target.value)}>
                         <option value="">Any Availability</option>
                         <option value="Weekends">Weekends</option>
                         <option value="Evenings">Evenings</option>
@@ -350,14 +352,14 @@ const DiscoverPage = () => {
             {/* Smart Recommendations */}
             {recommendedUsers.length > 0 && !search && !skillFilter && (
                 <div className="mb-12">
-                    <h2 className="text-xl font-bold mb-4 text-brand-300 flex items-center gap-2">✨ Recommended for You</h2>
+                    <h2 className="text-2xl font-bold mb-6 text-purple-400 flex items-center gap-2 tracking-tight">✨ Recommended for You</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {recommendedUsers.map((u, i) => renderUserCard(u, false))}
                     </div>
                 </div>
             )}
 
-            <h2 className="text-xl font-bold mb-4 text-white">All Users</h2>
+            <h2 className="text-2xl font-bold mb-6 text-white tracking-tight">All Users</h2>
 
             {users.length === 0 && !loading ? (
                 <EmptyState icon="🕵️‍♂️" title="No Matches Found" description="Try adjusting your filters or searching for different skills." />
@@ -466,43 +468,46 @@ const ChatPanel = ({ isOpen, onClose, request, currentUser, embedded = false }) 
     const partner = request.sender.id === currentUser.id ? request.receiver : request.sender;
 
     const containerClass = embedded 
-        ? "bg-slate-900/50 border border-slate-800 rounded-2xl flex flex-col h-[600px]"
-        : "fixed inset-y-0 right-0 w-full md:w-96 bg-slate-800 border-l border-slate-700 shadow-2xl z-50 flex flex-col animate-in slide-in-from-right duration-300";
+        ? "bg-[#111827] border border-gray-700 rounded-2xl flex flex-col h-[600px] shadow-md"
+        : "fixed inset-y-0 right-0 w-full md:w-96 bg-[#111827] border-l border-gray-700 shadow-2xl z-50 flex flex-col animate-in slide-in-from-right duration-300";
 
     return (
         <div className={containerClass}>
-            <div className="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-900/50">
-                <h3 className="font-bold text-white flex items-center gap-2">
-                    <span className="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-sm">{partner.first_name?.[0]}</span>
-                    Chat with {partner.first_name}
+            <div className="p-5 border-b border-gray-700 flex justify-between items-center bg-[#0b1220]">
+                <h3 className="font-bold text-white flex items-center gap-3">
+                    <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-sm shadow-md">{partner.first_name?.[0]}</span>
+                    <span className="tracking-tight">Chat with {partner.first_name}</span>
                 </h3>
                 {!embedded && (
-                    <button onClick={onClose} className="text-slate-400 hover:text-white">
+                    <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors duration-200">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 )}
             </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-[#0b1220]">
                 {messages.length === 0 ? (
-                    <div className="text-center text-slate-500 mt-10">No messages yet. Say hi!</div>
+                    <div className="text-center text-slate-500 mt-16">
+                        <div className="text-5xl mb-4 opacity-50">👋</div>
+                        <p>No messages yet. Say hi!</p>
+                    </div>
                 ) : (
                     messages.map(msg => {
                         const isMe = msg.sender_id === currentUser.id;
                         return (
                             <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                                <div className={`max-w-[80%] rounded-2xl px-4 py-2 ${isMe ? 'bg-brand-600 text-white rounded-br-none' : 'bg-slate-700 text-slate-200 rounded-bl-none'}`}>
+                                <div className={`max-w-[80%] rounded-2xl px-5 py-3 shadow-md ${isMe ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-br-none' : 'bg-[#111827] text-slate-200 rounded-bl-none border border-gray-700'}`}>
                                     {msg.text}
                                 </div>
-                                <span className="text-[10px] text-slate-500 mt-1">{new Date(msg.created_at).toLocaleTimeString()}</span>
+                                <span className="text-[10px] text-slate-500 mt-1.5">{new Date(msg.created_at).toLocaleTimeString()}</span>
                             </div>
                         );
                     })
                 )}
             </div>
-            <div className="p-4 border-t border-slate-700 bg-slate-900/50">
-                <form onSubmit={handleSend} className="flex gap-2">
-                    <input type="text" value={text} onChange={e => setText(e.target.value)} placeholder="Type a message..." className="flex-1 px-4 py-2 rounded-full bg-slate-800 border border-slate-700 text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500" />
-                    <button type="submit" disabled={loading || !text.trim()} className="w-10 h-10 rounded-full bg-brand-600 text-white flex items-center justify-center hover:bg-brand-500 disabled:opacity-50">
+            <div className="p-5 border-t border-gray-700 bg-[#0b1220]">
+                <form onSubmit={handleSend} className="flex gap-3">
+                    <input type="text" value={text} onChange={e => setText(e.target.value)} placeholder="Type a message..." className="flex-1 px-5 py-3 rounded-xl bg-[#111827] border border-gray-700 text-slate-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" />
+                    <button type="submit" disabled={loading || !text.trim()} className="w-12 h-12 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 text-white flex items-center justify-center hover:brightness-110 hover:scale-105 disabled:opacity-50 transition-all duration-200 shadow-lg shadow-purple-500/20">
                         ➤
                     </button>
                 </form>
@@ -560,21 +565,26 @@ const MessagesPage = () => {
     if (loading) return <Loading />;
 
     return (
-        <div className="min-h-screen bg-slate-950 py-8">
-            <div className="container mx-auto px-4">
-                <h1 className="text-3xl font-bold text-white mb-8">Messages</h1>
+        <div className="min-h-screen bg-[#0b1220] py-8">
+            <div className="container mx-auto px-6">
+                <h1 className="text-4xl font-bold text-white mb-8 tracking-tight">Messages</h1>
                 
                 {activeChats.length === 0 ? (
                     <EmptyState 
                         icon="💬" 
                         title="No Active Chats" 
                         description="Accept a swap request to start chatting with your swap partner."
+                        action={
+                            <a href="#discover" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-xl hover:brightness-110 hover:scale-105 transition-all duration-200 font-medium shadow-lg shadow-purple-500/30">
+                                Discover People
+                            </a>
+                        }
                     />
                 ) : (
                     <div className="grid lg:grid-cols-3 gap-6">
                         {/* Chat List */}
-                        <div className="lg:col-span-1 bg-slate-900/50 border border-slate-800 rounded-2xl p-4 space-y-2">
-                            <h2 className="font-semibold text-white mb-4">Active Chats</h2>
+                        <div className="lg:col-span-1 bg-[#111827] border border-gray-700 rounded-2xl p-6 space-y-3 shadow-md">
+                            <h2 className="font-semibold text-white mb-4 text-lg tracking-tight">Active Chats</h2>
                             {activeChats.map(chat => {
                                 const partner = chat.sender_id === user.id ? chat.receiver : chat.sender;
                                 const isSelected = selectedChat?.id === chat.id;
@@ -583,19 +593,19 @@ const MessagesPage = () => {
                                     <button
                                         key={chat.id}
                                         onClick={() => setSelectedChat(chat)}
-                                        className={`w-full text-left p-4 rounded-xl transition-all ${
+                                        className={`w-full text-left p-4 rounded-xl transition-all duration-200 ${
                                             isSelected 
-                                                ? 'bg-brand-600 text-white' 
-                                                : 'bg-slate-800/50 hover:bg-slate-800 text-slate-300'
+                                                ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg shadow-purple-500/20' 
+                                                : 'bg-[#0b1220] hover:bg-[#1f2937] text-slate-300 border border-gray-700'
                                         }`}
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white font-bold">
+                                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-md">
                                                 {partner.first_name?.[0] || 'U'}
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="font-medium truncate">{partner.first_name}</div>
-                                                <div className={`text-sm truncate ${isSelected ? 'text-brand-100' : 'text-slate-500'}`}>
+                                                <div className={`text-sm truncate ${isSelected ? 'text-purple-100' : 'text-slate-500'}`}>
                                                     {chat.skill_offered} ↔ {chat.skill_requested}
                                                 </div>
                                             </div>
@@ -616,9 +626,9 @@ const MessagesPage = () => {
                                     embedded={true}
                                 />
                             ) : (
-                                <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-12 text-center">
-                                    <div className="text-6xl mb-4">💬</div>
-                                    <h3 className="text-xl font-semibold text-white mb-2">Select a Chat</h3>
+                                <div className="bg-[#111827] border border-gray-700 rounded-2xl p-16 text-center shadow-md">
+                                    <div className="text-7xl mb-6 opacity-50">💬</div>
+                                    <h3 className="text-2xl font-semibold text-white mb-3 tracking-tight">Select a Chat</h3>
                                     <p className="text-slate-400">Choose a conversation from the list to start messaging</p>
                                 </div>
                             )}
@@ -704,19 +714,20 @@ const RequestsPage = () => {
     );
 
     return (
-        <div className="container mx-auto px-4 py-8 text-slate-100 max-w-4xl">
-            <h1 className="text-3xl font-bold mb-8 text-white">My Swaps Workspace</h1>
+        <div className="min-h-screen bg-[#0b1220] py-8">
+            <div className="container mx-auto px-6 text-slate-100 max-w-5xl">
+            <h1 className="text-4xl font-bold mb-8 text-white tracking-tight">My Swaps Workspace</h1>
             
-            <div className="mb-6 flex space-x-2 border-b border-slate-800">
+            <div className="mb-8 flex space-x-2 border-b border-gray-800">
                 <button
                     onClick={() => setActiveTab('received')}
-                    className={`px-6 py-3 font-medium text-sm transition-colors border-b-2 ${activeTab === 'received' ? 'border-brand-500 text-brand-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
+                    className={`px-6 py-3 font-semibold text-sm transition-all duration-200 border-b-2 ${activeTab === 'received' ? 'border-purple-500 text-purple-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
                 >
                     Received Swaps
                 </button>
                 <button
                     onClick={() => setActiveTab('sent')}
-                    className={`px-6 py-3 font-medium text-sm transition-colors border-b-2 ${activeTab === 'sent' ? 'border-brand-500 text-brand-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
+                    className={`px-6 py-3 font-semibold text-sm transition-all duration-200 border-b-2 ${activeTab === 'sent' ? 'border-purple-500 text-purple-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
                 >
                     Sent Swaps
                 </button>
@@ -733,47 +744,50 @@ const RequestsPage = () => {
                     const partner = activeTab === 'received' ? request.sender : request.receiver;
 
                     return (
-                        <div key={request.id} className="bg-slate-800/60 border border-slate-700 rounded-2xl shadow-md p-6 hover:border-brand-500/30 transition-colors">
+                        <div key={request.id} className="bg-[#111827] border border-gray-700 rounded-2xl shadow-md p-6 hover:border-purple-500/30 hover:-translate-y-1 transition-all duration-200">
                             <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-6">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center text-xl font-bold border-2 border-slate-600">
+                                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-xl font-bold text-white shadow-lg shadow-purple-500/20">
                                         {partner.first_name ? partner.first_name[0].toUpperCase() : 'U'}
                                     </div>
                                     <div>
-                                        <h3 className="font-semibold text-lg text-white">
+                                        <h3 className="font-semibold text-lg text-white tracking-tight">
                                             {partner.first_name}
                                         </h3>
                                         <p className="text-slate-400 text-sm">{partner.email}</p>
                                     </div>
                                 </div>
-                                <div className="flex flex-col items-end">
-                                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                                <div className="flex flex-col items-end gap-2">
+                                    <span className={`px-4 py-1.5 rounded-full text-xs font-medium border ${
                                         request.status === 'pending' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
                                         request.status === 'accepted' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
                                         request.status === 'rejected' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                                        'bg-brand-500/10 text-brand-400 border-brand-500/20'
+                                        'bg-purple-500/10 text-purple-400 border-purple-500/20'
                                     }`}>
                                         {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                                     </span>
-                                    <span className="text-slate-500 text-xs mt-2">
+                                    <span className="text-slate-500 text-xs">
                                         {new Date(request.created_at).toLocaleDateString()}
                                     </span>
                                 </div>
                             </div>
                             
-                            <div className="bg-slate-900/50 rounded-xl p-4 mb-6 border border-slate-700/50 grid md:grid-cols-2 gap-4">
-                                <div>
-                                    <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold block mb-1">Offered Skill</span>
-                                    <span className="text-slate-200 font-medium">{request.skill_offered}</span>
-                                </div>
-                                <div>
-                                    <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold block mb-1">Requested Skill</span>
-                                    <span className="text-slate-200 font-medium">{request.skill_requested}</span>
+                            <div className="bg-[#0b1220] rounded-xl p-5 mb-6 border border-gray-700/50">
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="flex-1">
+                                        <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold block mb-2">You Offer</span>
+                                        <span className="text-slate-200 font-medium text-lg">{request.skill_offered}</span>
+                                    </div>
+                                    <div className="text-purple-400 text-2xl">→</div>
+                                    <div className="flex-1 text-right">
+                                        <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold block mb-2">You Want</span>
+                                        <span className="text-slate-200 font-medium text-lg">{request.skill_requested}</span>
+                                    </div>
                                 </div>
                                 {request.message && (
-                                    <div className="md:col-span-2 mt-2 pt-4 border-t border-slate-700/50">
+                                    <div className="mt-5 pt-5 border-t border-gray-700/50">
                                         <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold block mb-2">Message</span>
-                                        <p className="text-slate-300 text-sm bg-slate-800 p-3 rounded-lg border border-slate-700/50">"{request.message}"</p>
+                                        <p className="text-slate-300 text-sm bg-[#111827] p-4 rounded-lg border border-gray-700/50">"{request.message}"</p>
                                     </div>
                                 )}
                             </div>
@@ -811,34 +825,34 @@ const RequestsPage = () => {
                             <div className="flex flex-wrap gap-3">
                                 {activeTab === 'received' && request.status === 'pending' && (
                                     <>
-                                        <button onClick={() => updateRequestStatus(request.id, 'accept')} className="bg-green-600/20 text-green-400 border border-green-500/30 px-6 py-2 rounded-xl hover:bg-green-600 hover:text-white transition-colors font-medium text-sm">
-                                            Accept Request
+                                        <button onClick={() => updateRequestStatus(request.id, 'accept')} className="bg-green-500/20 text-green-400 border border-green-500/30 px-6 py-3 rounded-xl hover:bg-green-500 hover:text-white hover:scale-105 transition-all duration-200 font-medium text-sm shadow-md">
+                                            ✓ Accept Request
                                         </button>
-                                        <button onClick={() => updateRequestStatus(request.id, 'reject')} className="bg-red-600/20 text-red-400 border border-red-500/30 px-6 py-2 rounded-xl hover:bg-red-600 hover:text-white transition-colors font-medium text-sm">
-                                            Reject
+                                        <button onClick={() => updateRequestStatus(request.id, 'reject')} className="bg-red-500/20 text-red-400 border border-red-500/30 px-6 py-3 rounded-xl hover:bg-red-500 hover:text-white hover:scale-105 transition-all duration-200 font-medium text-sm shadow-md">
+                                            ✕ Reject
                                         </button>
                                     </>
                                 )}
                                 {isAccepted && (
                                     <>
-                                        <button onClick={() => setChatPanel({ open: true, request })} className="bg-slate-700 text-white px-6 py-2 rounded-xl hover:bg-slate-600 transition-colors font-medium text-sm shadow-md flex items-center gap-2">
+                                        <button onClick={() => setChatPanel({ open: true, request })} className="bg-[#0b1220] border border-gray-700 text-white px-6 py-3 rounded-xl hover:bg-[#1f2937] hover:scale-105 transition-all duration-200 font-medium text-sm shadow-md flex items-center gap-2">
                                             💬 Chat
                                         </button>
                                         {activeTab === 'received' && (
-                                            <button onClick={() => { updateRequestStatus(request.id, 'complete'); setReviewModal({ open: true, request }); }} className="bg-brand-600 text-white px-6 py-2 rounded-xl hover:bg-brand-500 transition-colors font-medium text-sm shadow-md shadow-brand-500/20">
-                                                Mark as Completed
+                                            <button onClick={() => { updateRequestStatus(request.id, 'complete'); setReviewModal({ open: true, request }); }} className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-6 py-3 rounded-xl hover:brightness-110 hover:scale-105 transition-all duration-200 font-medium text-sm shadow-lg shadow-purple-500/20">
+                                                ✓ Mark as Completed
                                             </button>
                                         )}
                                         {activeTab === 'sent' && (
-                                            <button onClick={() => { updateRequestStatus(request.id, 'complete'); setReviewModal({ open: true, request }); }} className="bg-brand-600 text-white px-6 py-2 rounded-xl hover:bg-brand-500 transition-colors font-medium text-sm shadow-md shadow-brand-500/20">
-                                                Mark as Completed
+                                            <button onClick={() => { updateRequestStatus(request.id, 'complete'); setReviewModal({ open: true, request }); }} className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-6 py-3 rounded-xl hover:brightness-110 hover:scale-105 transition-all duration-200 font-medium text-sm shadow-lg shadow-purple-500/20">
+                                                ✓ Mark as Completed
                                             </button>
                                         )}
                                     </>
                                 )}
                                 {activeTab === 'sent' && request.status === 'pending' && (
-                                    <button onClick={() => updateRequestStatus(request.id, 'delete')} className="bg-slate-700 text-white border border-slate-600 px-6 py-2 rounded-xl hover:bg-red-600 hover:border-red-500 transition-colors font-medium text-sm">
-                                        Cancel Request
+                                    <button onClick={() => updateRequestStatus(request.id, 'delete')} className="bg-red-500/20 text-red-400 border border-red-500/30 px-6 py-3 rounded-xl hover:bg-red-500 hover:text-white hover:scale-105 transition-all duration-200 font-medium text-sm shadow-md">
+                                        ❌ Cancel Request
                                     </button>
                                 )}
                             </div>
@@ -860,6 +874,7 @@ const RequestsPage = () => {
                 request={chatPanel.request}
                 currentUser={user}
             />
+            </div>
         </div>
     );
 };
@@ -1275,7 +1290,7 @@ const App = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100">
+        <div className="min-h-screen bg-[#0b1220] text-slate-100">
             <Navigation openAuthModal={openAuthModal} />
             {renderView()}
             <AuthModal 
