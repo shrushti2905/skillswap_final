@@ -54,8 +54,8 @@ class ApiClient {
                         }
                     }
                 } catch (parseError) {
-                    const errorText = await response.text();
-                    if (errorText) errorMessage = errorText;
+                    // If JSON parsing fails, use the status text
+                    errorMessage = `HTTP ${response.status}: ${response.statusText}`;
                 }
                 console.error('API Response Error:', response.status, errorMessage);
                 throw new Error(errorMessage);
