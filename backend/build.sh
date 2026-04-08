@@ -1,13 +1,7 @@
 #!/usr/bin/env bash
 set -o errexit
 
-echo "Installing dependencies..."
-pip install -r requirements.txt --no-cache-dir
-
-echo "Collecting static files..."
-python manage.py collectstatic --no-input --clear
-
-echo "Running migrations..."
-python manage.py migrate --no-input
-
-echo "Build complete!"
+pip install -r requirements.txt
+python manage.py collectstatic --no-input
+# Skip migrations for now to test
+# python manage.py migrate
