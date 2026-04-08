@@ -43,7 +43,15 @@ class ApiClient {
                 try {
                     const errorPayload = await response.json();
                     if (errorPayload && typeof errorPayload === 'object') {
-                        errorMessage = errorPayload.message || errorPayload.error || JSON.stringify(errorPayload);
+                        // Handle Django validation errors
+                        if (errorPayload.message && typeof errorPayload.message === 'object') {
+                            const errors = Object.entries(errorPayload.message)
+                                .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
+                                .join('; ');
+                            errorMessage = errors;
+                        } else {
+                            errorMessage = errorPayload.message || errorPayload.error || JSON.stringify(errorPayload);
+                        }
                     }
                 } catch (parseError) {
                     const errorText = await response.text();
