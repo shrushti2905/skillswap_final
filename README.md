@@ -8,8 +8,8 @@ A peer-to-peer skill exchange platform where users offer skills they have and re
 
 ### Fresh Laptop Setup
 ```bash
-git clone https://github.com/yourusername/skillswap-platform.git
-cd skillswap-platform
+git clone https://github.com/shrushti2905/skillswap_final.git
+cd skillswap_final
 python start.py
 ```
 
@@ -39,8 +39,8 @@ That's it! 🎉
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/skillswap-platform.git
-cd skillswap-platform
+git clone https://github.com/shrushti2905/skillswap_final.git
+cd skillswap_final
 
 # Setup backend
 cd backend
