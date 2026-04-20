@@ -5,10 +5,16 @@ from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Avg, Count
+from django.shortcuts import render
 from .serializers import SignupSerializer, LoginSerializer, UserSerializer, ProfileUpdateSerializer, SkillSerializer
 from .authentication import generate_token
 
 User = get_user_model()
+
+
+def index(request):
+    """Serve the main SPA frontend"""
+    return render(request, 'accounts/index.html')
 
 
 def _blocked_response(request):

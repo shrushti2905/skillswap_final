@@ -1,24 +1,25 @@
+// API Client for Django Backend
 class ApiClient {
     constructor() {
+        // Dynamic backend URL - use same origin as frontend to avoid CORS
         const hostname = window.location.hostname;
-
-        // Production (Render)
         if (hostname.includes('onrender.com')) {
             this.baseURL = 'https://skillswap-backend-iiz3.onrender.com/api';
-        } 
-        // Local development
-        else {
-            this.baseURL = '/api';
+        } else {
+            // Use window.location.origin to match frontend origin exactly
+            this.baseURL = `${window.location.origin}/api`;
         }
-
         this.token = localStorage.getItem('token');
+        
+        // Debug logging
+        console.log('API Client initialized with baseURL:', this.baseURL);
+        console.log('Frontend origin:', window.location.origin);
     }
 
     setToken(token) {
         this.token = token;
         localStorage.setItem('token', token);
     }
-}
 
     removeToken() {
         this.token = null;
@@ -26,27 +27,50 @@ class ApiClient {
     }
 
     async request(endpoint, options = {}) {
-        const res = await fetch(this.baseURL + endpoint, {
-            headers: {
-                'Content-Type': 'application/json',
-                ...(this.token && { Authorization: `Bearer ${this.token}` }),
-            },
-            ...options,
-        });
-
-        let data;
-
+        const url = this.baseURL + endpoint;
+        console.log('API Request URL:', url);
+        console.log('Request options:', options);
+        
         try {
-            data = await res.json(); // ✅ read ONLY ONCE
-        } catch (e) {
-            data = null;
-        }
+            const res = await fetch(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(this.token && { Authorization: `Bearer ${this.token}` }),
+                },
+                ...options,
+            });
 
-        if (!res.ok) {
-            throw new Error(data?.detail || 'API request failed');
-        }
+            console.log('Response status:', res.status);
+            console.log('Response headers:', Object.fromEntries(res.headers.entries()));
 
-        return data;
+            let data;
+            try {
+                data = await res.json();
+            } catch (e) {
+                console.warn('Failed to parse JSON response:', e);
+                data = null;
+            }
+
+            if (!res.ok) {
+                console.error('API request failed:', {
+                    url,
+                    status: res.status,
+                    statusText: res.statusText,
+                    data
+                });
+                throw new Error(data?.detail || `API request failed: ${res.status} ${res.statusText}`);
+            }
+
+            console.log('API request successful:', { url, data });
+            return data;
+        } catch (error) {
+            console.error('API request error:', {
+                url,
+                error: error.message,
+                stack: error.stack
+            });
+            throw error;
+        }
     }
 
     // Auth endpoints

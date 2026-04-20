@@ -2,6 +2,7 @@ from django.urls import path
 from . import views, admin_views
 
 urlpatterns = [
+    # API endpoints
     path('auth/signup/', views.signup, name='signup'),
     path('auth/login/', views.login, name='login'),
     path('auth/me/', views.me, name='me'),

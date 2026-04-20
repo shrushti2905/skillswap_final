@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
+from django.db import models
 from .models import SwapRequest, SwapMessage
 from .serializers import SwapRequestSerializer, CreateSwapRequestSerializer, UpdateRequestSerializer
 from notifications.models import Notification
@@ -192,25 +193,61 @@ def complete_request(request, id):
     if blocked_response:
         return blocked_response
 
+    # Debug logging
+    print(f"Complete request attempt - Request ID: {id}, User: {request.user.email}")
+    
     try:
-        swap_request = SwapRequest.objects.get(id=id, receiver=request.user, status='accepted')
+        # Allow both sender and receiver to complete the request, or admin users
+        if request.user.role == 'admin':
+            swap_request = SwapRequest.objects.filter(id=id).first()
+        else:
+            swap_request = SwapRequest.objects.filter(
+                id=id
+            ).filter(
+                models.Q(sender=request.user) | models.Q(receiver=request.user)
+            ).first()
         
+        if not swap_request:
+            print(f"Request not found - ID: {id}, User: {request.user.email}")
+            return Response({
+                'error': 'Not Found',
+                'message': 'Request not found or you do not have permission to complete it'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        print(f"Found request - ID: {swap_request.id}, Status: {swap_request.status}")
+        print(f"Sender: {swap_request.sender.email}, Receiver: {swap_request.receiver.email}")
+        
+        # Check if request is in correct state for completion
+        if swap_request.status != 'accepted':
+            print(f"Invalid state for completion: {swap_request.status}")
+            return Response({
+                'error': 'Invalid state',
+                'message': f'Request must be accepted before completion. Current status: {swap_request.status}',
+                'current_status': swap_request.status,
+                'required_status': 'accepted'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Complete the request
         swap_request.status = 'completed'
         swap_request.save()
         
-        # Create notification for sender
+        print(f"Request {id} completed successfully")
+        
+        # Create notification for the other party
+        other_user = swap_request.receiver if request.user == swap_request.sender else swap_request.sender
         Notification.objects.create(
-            user=swap_request.sender,
+            user=other_user,
             message=f"Your skill swap with {request.user.email} has been marked as completed!"
         )
         
         return Response(SwapRequestSerializer(swap_request).data)
         
-    except SwapRequest.DoesNotExist:
+    except Exception as e:
+        print(f"Error completing request {id}: {str(e)}")
         return Response({
-            'error': 'Not Found',
-            'message': 'Request not found or cannot be completed'
-        }, status=status.HTTP_404_NOT_FOUND)
+            'error': 'Internal Server Error',
+            'message': 'An error occurred while completing the request'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['DELETE'])
 def delete_request(request, id):
