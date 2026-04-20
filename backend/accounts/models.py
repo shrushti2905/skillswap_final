@@ -7,6 +7,10 @@ class User(AbstractUser):
         ('user', 'User'),
     ]
     
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
+    
+    email = models.EmailField(unique=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
     skills_offered = models.JSONField(default=list, blank=True)
     skills_wanted = models.JSONField(default=list, blank=True)

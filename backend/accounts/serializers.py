@@ -46,8 +46,8 @@ class LoginSerializer(serializers.Serializer):
         
         try:
             user = User.objects.get(email=email)
-            # Authenticate using username (not email)
-            authenticated_user = authenticate(username=user.username, password=password)
+            # Authenticate using email (since USERNAME_FIELD is email)
+            authenticated_user = authenticate(username=email, password=password)
             
             if authenticated_user:
                 if user.is_blocked:

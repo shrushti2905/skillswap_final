@@ -8,7 +8,7 @@ class ApiClient {
         } 
         // Local development
         else {
-            this.baseURL = '/api';
+            this.baseURL = 'http://127.0.0.1:8001/api';
         }
 
         this.token = localStorage.getItem('token');
@@ -18,7 +18,6 @@ class ApiClient {
         this.token = token;
         localStorage.setItem('token', token);
     }
-}
 
     removeToken() {
         this.token = null;
@@ -237,3 +236,15 @@ class ApiClient {
 
 // Global API client instance
 window.apiClient = new ApiClient();
+
+// Debug: Check if API client is properly loaded
+console.log('API Client loaded:', window.apiClient);
+console.log('Signup method available:', typeof window.apiClient.signup);
+
+// Ensure API client is available globally
+window.addEventListener('DOMContentLoaded', function() {
+    if (!window.apiClient) {
+        console.error('API Client failed to initialize!');
+        window.apiClient = new ApiClient();
+    }
+});

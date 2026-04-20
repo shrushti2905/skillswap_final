@@ -1,3 +1,14 @@
+// Safety check for API client
+if (!window.apiClient) {
+    console.error('API Client not loaded! Check script loading order.');
+    // Try to wait a bit and check again
+    setTimeout(() => {
+        if (!window.apiClient) {
+            console.error('API Client still not available after timeout');
+        }
+    }, 100);
+}
+
 const { useState, useEffect, createContext, useContext, useRef } = React;
 
 // Auth Context
@@ -27,22 +38,32 @@ const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         try {
+            // Safety check
+            if (!window.apiClient || typeof window.apiClient.login !== 'function') {
+                throw new Error('API Client not properly initialized');
+            }
             const response = await window.apiClient.login(email, password);
             window.apiClient.setToken(response.token);
             setUser(response.user);
             return response;
         } catch (error) {
+            console.error('Login error:', error);
             throw error;
         }
     };
 
     const signup = async (name, email, password) => {
         try {
+            // Safety check
+            if (!window.apiClient || typeof window.apiClient.signup !== 'function') {
+                throw new Error('API Client not properly initialized');
+            }
             const response = await window.apiClient.signup(name, email, password);
             window.apiClient.setToken(response.token);
             setUser(response.user);
             return response;
         } catch (error) {
+            console.error('Signup error:', error);
             throw error;
         }
     };
